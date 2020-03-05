@@ -10,3 +10,7 @@ export declare type MapActionsSelector<T> = {
     to: <K extends keyof SubType<T, Action<any, any>>>(...keys: K[]) => Pick<MappedActions<T>, K>;
 };
 export declare function mapTypedActions<T>(namespace?: string): MapActionsSelector<T>;
+export declare type VmActor<T> = {
+    dispatch: <K extends keyof SubType<T, Action<any, any>>>(...params: ActionPayload<T[K]> extends void ? [K] : [K, ActionPayload<T[K]>]) => Promise<any>;
+};
+export declare function vmActions<Actions>(this: Vue, namespace?: string): VmActor<Actions>;

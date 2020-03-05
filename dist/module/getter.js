@@ -15,3 +15,15 @@ function mapTypedGetters(namespace) {
     };
 }
 exports.mapTypedGetters = mapTypedGetters;
+function vmGetters(namespace) {
+    var _this = this;
+    return {
+        getters: function (name) {
+            var path = (typeof namespace === 'string'
+                ? namespace + "/" + name
+                : name);
+            return _this.$store.getters[path];
+        },
+    };
+}
+exports.vmGetters = vmGetters;

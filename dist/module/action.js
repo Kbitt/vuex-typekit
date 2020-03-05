@@ -15,3 +15,15 @@ function mapTypedActions(namespace) {
     };
 }
 exports.mapTypedActions = mapTypedActions;
+function vmActions(namespace) {
+    var _this = this;
+    return {
+        dispatch: function (name, payload) {
+            var path = (typeof namespace === 'string'
+                ? namespace + "/" + name
+                : name);
+            return _this.$store.dispatch(path, payload);
+        },
+    };
+}
+exports.vmActions = vmActions;

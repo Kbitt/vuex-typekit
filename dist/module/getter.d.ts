@@ -14,3 +14,7 @@ export declare type MapGettersSelector<T> = {
     to: <K extends keyof SubType<T, Getter<any, any>>>(...keys: K[]) => Pick<MappedGetters<T>, K>;
 };
 export declare function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T>;
+export declare type VmGetter<T> = {
+    getters: <K extends keyof SubType<T, Getter<any, any>>>(name: K) => T[K];
+};
+export declare function vmGetters<Getters>(this: Vue, namespace?: string): VmGetter<Getters>;

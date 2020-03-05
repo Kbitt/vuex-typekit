@@ -30,3 +30,7 @@ function createGetters(options) {
     return __assign({}, options);
 }
 exports.createGetters = createGetters;
+function createMutations(options) {
+    return __assign({}, options);
+}
+exports.createMutations = createMutations;

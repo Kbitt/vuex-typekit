@@ -15,3 +15,15 @@ function mapTypedMutations(namespace) {
     };
 }
 exports.mapTypedMutations = mapTypedMutations;
+function vmMutations(namespace) {
+    var _this = this;
+    return {
+        commit: function (name, payload) {
+            var path = (typeof namespace === 'string'
+                ? namespace + "/" + name
+                : name);
+            _this.$store.commit(path, payload);
+        },
+    };
+}
+exports.vmMutations = vmMutations;

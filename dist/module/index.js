@@ -1,12 +1,10 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-var getter_1 = require("./getter");
-exports.mapTypedGetters = getter_1.mapTypedGetters;
-var state_1 = require("./state");
-exports.mapTypedState = state_1.mapTypedState;
-var mutation_1 = require("./mutation");
-exports.mapTypedMutations = mutation_1.mapTypedMutations;
-var action_1 = require("./action");
-exports.mapTypedActions = action_1.mapTypedActions;
-var builder_1 = require("./builder");
-exports.createActions = builder_1.createActions;
+__export(require("./getter"));
+__export(require("./state"));
+__export(require("./mutation"));
+__export(require("./action"));
+__export(require("./builder"));
