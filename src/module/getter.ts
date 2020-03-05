@@ -34,7 +34,7 @@ export function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T> {
 }
 
 export type VmGetter<T> = {
-    getters: <K extends keyof SubType<T, Getter<any, any>>>(name: K) => T[K]
+    get: <K extends keyof SubType<T, Getter<any, any>>>(name: K) => T[K]
 }
 
 export function vmGetters<Getters>(
@@ -42,7 +42,7 @@ export function vmGetters<Getters>(
     namespace?: string
 ): VmGetter<Getters> {
     return {
-        getters: name => {
+        get: name => {
             const path = (typeof namespace === 'string'
                 ? `${namespace}/${name}`
                 : name) as string

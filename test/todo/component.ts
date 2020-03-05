@@ -1,6 +1,11 @@
 import Vue from 'vue'
-import { TodoState, TodoMutations, TodoActions } from './todo'
-import { mapTypedState, mapTypedMutations, mapTypedActions } from '../../src'
+import { TodoState, TodoMutations, TodoActions, TodoGetters } from './todo'
+import {
+    mapTypedState,
+    mapTypedMutations,
+    mapTypedActions,
+    mapTypedGetters,
+} from '../../src'
 const template = `
 <div>
     <button type="button" id="add" @click="ADD_TODO">Add</button>
@@ -32,6 +37,11 @@ const createTodoComponent = (
             template,
             computed: {
                 ...mapTypedState<TodoState>(namespace).to('todos', 'filter'),
+                ...mapTypedGetters<TodoGetters>(namespace).to(
+                    'doneCount',
+                    'notDoneCount',
+                    'filtered'
+                ),
             },
             methods: {
                 ...mapTypedMutations<TodoMutations>(namespace).to(
@@ -55,6 +65,15 @@ const createTodoComponent = (
             },
             filter(this: Vue) {
                 return this.$state<TodoState>(namespace).get('filter')
+            },
+            filtered(this: Vue) {
+                return this.$getters<TodoGetters>().get('filtered')
+            },
+            doneCount(this: Vue) {
+                return this.$getters<TodoGetters>().get('doneCount')
+            },
+            notDoneCount(this: Vue) {
+                return this.$getters<TodoGetters>().get('notDoneCount')
             },
         },
         methods: {

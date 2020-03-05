@@ -18,7 +18,7 @@ function createActions(options) {
         result[k] = function (context, payload) {
             return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { mutate: function (name, mutationPayload) {
                     context.commit(name, mutationPayload);
-                }, act: function (name, actionPayload) {
+                }, send: function (name, actionPayload) {
                     return context.dispatch(name, actionPayload);
                 } }), payload));
         };

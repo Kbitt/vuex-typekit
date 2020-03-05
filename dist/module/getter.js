@@ -18,7 +18,7 @@ exports.mapTypedGetters = mapTypedGetters;
 function vmGetters(namespace) {
     var _this = this;
     return {
-        getters: function (name) {
+        get: function (name) {
             var path = (typeof namespace === 'string'
                 ? namespace + "/" + name
                 : name);

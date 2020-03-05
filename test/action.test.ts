@@ -41,8 +41,8 @@ const createStore = () =>
                     setValue: ({ mutate }, payload) => {
                         mutate('SET_VALUE', payload)
                     },
-                    prependValue: ({ state, act }) => {
-                        return act('setValue', { value: 'Mr. ' + state.value })
+                    prependValue: ({ state, send }) => {
+                        return send('setValue', { value: 'Mr. ' + state.value })
                     },
                 }
             ),

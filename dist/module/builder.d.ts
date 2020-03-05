@@ -5,7 +5,7 @@ import { GetterResult } from './getter';
 import { MutationType } from './mutation';
 export interface TypedActionContext<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> extends ActionContext<State, any> {
     mutate: <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] : [K, Parameters<Mutations[K]>[1]]) => void;
-    act: <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]) => Promise<any> | void;
+    send: <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]) => Promise<any> | void;
     getters: GetterResult<Getters>;
     rootState: RootState;
     rootGetters: GetterResult<RootGetters>;

@@ -16,7 +16,7 @@ export interface TypedActionContext<
             ? [K]
             : [K, Parameters<Mutations[K]>[1]]
     ) => void
-    act: <K extends keyof SubType<Actions, Action<any, any>>>(
+    send: <K extends keyof SubType<Actions, Action<any, any>>>(
         ...params: Parameters<Actions[K]>[1] extends void
             ? [K]
             : [K, Parameters<Actions[K]>[1]]
@@ -95,7 +95,7 @@ export function createActions<
                         ) => {
                             context.commit(name as string, mutationPayload)
                         },
-                        act: (name: keyof Actions, actionPayload?: any) =>
+                        send: (name: keyof Actions, actionPayload?: any) =>
                             context.dispatch(name as string, actionPayload),
                     },
                     payload

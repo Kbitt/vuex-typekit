@@ -26,6 +26,8 @@ export interface TodoMutations {
     SET_DONE: MutationType<TodoState, { index: number; done: boolean }>
     SET_TEXT: MutationType<TodoState, { index: number; text: string }>
     REMOVE_TODO: MutationType<TodoState, { index: number }>
+    SET_FILTER_DONE: MutationType<TodoState, { done: boolean | undefined }>
+    SET_FILTER_TEXT: MutationType<TodoState, { text: string | undefined }>
 }
 
 export interface TodoGetters {
@@ -59,6 +61,8 @@ export const createTodoModule = (): Module<TodoState, any> => ({
             SET_TEXT: (state, { index, text }) => {
                 state.todos[index].text = text
             },
+            SET_FILTER_DONE: (state, { done }) => (state.filter.done = done),
+            SET_FILTER_TEXT: (state, { text }) => (state.filter.text = text),
         }),
     },
     getters: {
@@ -97,7 +101,10 @@ export const createTodoModule = (): Module<TodoState, any> => ({
                 const realIndex = state.todos.indexOf(todo)
                 mutate('SET_DONE', { index: realIndex, done })
             },
-            setText: ({ state, mutate, getters, act }, { index, text }) => {
+            setText: (
+                { state, mutate, getters, send: act },
+                { index, text }
+            ) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
                 mutate('SET_TEXT', { index: realIndex, text })
