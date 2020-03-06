@@ -2,6 +2,8 @@
 
 ### A set of handy types and utility functions for creating more strongly typed Vuex modules.
 
+Now with support for `@vue/composition-api` as of 2.0. Use 1.x for pre-composition api. 3.0 will support vue@3.
+
 ## The Problem
 
 Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write Vuex modules with useful type information that extends from the module's definition to its consumption.

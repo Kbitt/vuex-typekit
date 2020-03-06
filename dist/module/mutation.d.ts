@@ -7,7 +7,9 @@ export declare type MappedMutations<T> = {
     [P in keyof T]: T[P] extends Mutation<any> ? MappedMutation<T[P]> : never;
 };
 export declare type VueMapMutationsSelector<T> = {
-    to: <K extends keyof SubType<T, Mutation<any>>>(...keys: K[]) => Pick<MappedMutations<T>, K>;
+    to: <K extends keyof SubType<T, Mutation<any>>>(...keys: K[]) => {
+        [P in K]: MappedMutations<T>[P];
+    };
 };
 export declare type MapMutationsSelector<T> = {
     to: <K extends keyof SubType<T, Mutation<any>>>(...keys: K[]) => UnbindVue<Pick<MappedMutations<T>, K>>;

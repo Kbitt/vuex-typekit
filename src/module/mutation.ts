@@ -24,7 +24,7 @@ export type MappedMutations<T> = {
 export type VueMapMutationsSelector<T> = {
     to: <K extends keyof SubType<T, Mutation<any>>>(
         ...keys: K[]
-    ) => Pick<MappedMutations<T>, K>
+    ) => { [P in K]: MappedMutations<T>[P] }
 }
 
 export type MapMutationsSelector<T> = {
