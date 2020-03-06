@@ -28,5 +28,10 @@
     "scripts": {
         "build": "tsc",
         "test": "jest"
-    }
+    },
+    "keywords": [
+        "vue",
+        "vuex",
+        "typescript"
+    ]
 }
