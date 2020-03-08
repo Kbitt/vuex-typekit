@@ -15,6 +15,7 @@ export type GetterRefMapper<G> = {
 export function useGetters<G>(namespace?: NamespaceRef): GetterRefMapper<G> {
     return {
         with: <K extends keyof SubType<G, Getter<any, any>>>(...keys: K[]) => {
+            const $store = useStore()
             const mapped = computed(() =>
                 mapTypedGetters<G>(resolveNamespace(namespace)).to(...keys)
             )
@@ -22,9 +23,7 @@ export function useGetters<G>(namespace?: NamespaceRef): GetterRefMapper<G> {
                 [P in K]: Readonly<Ref<Readonly<ReturnType<G[P]>>>>
             }
             keys.forEach(key => {
-                result[key] = computed(() =>
-                    mapped.value[key].call({ $store: useStore() })
-                )
+                result[key] = computed(() => mapped.value[key].call({ $store }))
             })
             return result
         },

@@ -125,7 +125,50 @@ const store = new Store<TodoState>({
 
 The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed. But the context passed to each action has a couple extra functions: `mutate` and `send`, which are strongly typed versions of `commit` and `dispatch` (and which are simply wrappers for the latter, respectively). All local mutation/action names and payload types are available when using these functions, but the original `commit` and `dispatch` are still there for calling outside the current module. The results of these utility functions are simply a map of mutations, actions, and getters, for a completely normal vuex module at runtime. No classes or decorators, just objects.
 
-Now we can use these interfaces when we consume the module as well. Instead of using the `mapXXX` functions provided by Vuex, we can use `mapTypedXXX` provided by this module.
+## New in 2.0: hooks for composition-api
+
+Use hooks inside composition-api components. If you're using multiple instances of a generic module, you can switch between them in the same component by passing in a ref to the namespace. When the ref updates, the mapped refs and functions will safely react and use the new namespace.
+
+```typescript
+
+// options must be passed in to use the hooks. useStore can be either a regular function that
+// returns the store instance, or a hook function using the provide/inject pattern
+Vue.use(VuexTypekit, {
+    useStore: () => // return store
+})
+export default defineComponent({
+    setup: () => {
+        return {
+            ...useState<TodoState>(/* namespace?: string | Ref<string> */).with(
+                'filter',
+                'todos'
+            ),
+            ...useGetters<
+                TodoGetters
+            >(/* namespace?: string | Ref<string> */).with(
+                'doneCount',
+                'filtered',
+                'notDoneCount'
+            ),
+            ...useMutataions<
+                TodoMutations
+            >(/* namespace?: string | Ref<string> */).with(
+                'ADD_TODO',
+                'REMOVE_TODO'
+            ),
+            ...useActions<
+                TodoActions
+            >(/* namespace?: string | Ref<string> */).with(
+                'setDone',
+                'setText',
+                'clearDone'
+            ),
+        }
+    },
+})
+```
+
+For classic options api components, we can use map functions to map a module just like the vuex helpers. Instead of using the `mapXXX` functions provided by Vuex, we can use `mapTypedXXX` provided by this module.
 
 ```typescript
 export default Vue.extend({

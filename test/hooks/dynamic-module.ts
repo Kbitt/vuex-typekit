@@ -17,9 +17,6 @@ export const createDynamicModule = () => {
         mutations: {
             ...createMutations<DynamicModuleState, DynamicModuleMutations>({
                 SET_VALUE: (state, payload) => {
-                    console.log(
-                        `SET_VALUE oldValue: ${state.value} newValue: ${payload.value}`
-                    )
                     state.value = payload.value
                 },
             }),

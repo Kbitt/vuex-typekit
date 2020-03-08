@@ -11,6 +11,7 @@ function useMutataions(namespace) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 keys[_i] = arguments[_i];
             }
+            var $store = store_1.useStore();
             var mapped = composition_api_1.computed(function () {
                 var _a;
                 return (_a = module_1.mapTypedMutations(types_1.resolveNamespace(namespace))).to.apply(_a, keys);
@@ -18,7 +19,7 @@ function useMutataions(namespace) {
             var result = {};
             keys.forEach(function (key) {
                 result[key] = function (payload) {
-                    return mapped.value[key].call({ $store: store_1.useStore() }, payload);
+                    return mapped.value[key].call({ $store: $store }, payload);
                 };
             });
             return result;

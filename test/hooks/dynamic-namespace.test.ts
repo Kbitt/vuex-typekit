@@ -1,8 +1,9 @@
 import { getLocalVue } from '../_init'
 import { Store } from 'vuex'
 import { DynamicModuleState, createDynamicModule } from './dynamic-module'
-import Dynamic from './Dynamic.vue'
-import { shallowMount, mount } from '@vue/test-utils'
+import App from './App.vue'
+import { useStore } from './useStore'
+import { mount } from '@vue/test-utils'
 
 describe('dynamic namespace switching', () => {
     let localVue: ReturnType<typeof getLocalVue>
@@ -11,7 +12,7 @@ describe('dynamic namespace switching', () => {
         b?: DynamicModuleState
         c?: DynamicModuleState
     }>
-    let wrapped: ReturnType<typeof shallowMount>
+    let wrapped: ReturnType<typeof mount>
 
     const getInputValue = (id: string) => {
         return (wrapped.find(id).element as HTMLInputElement).value
@@ -25,7 +26,7 @@ describe('dynamic namespace switching', () => {
     const NS = '#namespace',
         VALUE = '#value'
     beforeEach(() => {
-        localVue = getLocalVue({ useStore: () => store })
+        localVue = getLocalVue({ useStore })
         store = new Store({
             modules: {
                 a: createDynamicModule(),
@@ -33,7 +34,7 @@ describe('dynamic namespace switching', () => {
                 c: createDynamicModule(),
             },
         })
-        wrapped = mount(Dynamic, { localVue, store })
+        wrapped = mount(App, { localVue, store, propsData: { store } })
     })
 
     it('switching', async () => {

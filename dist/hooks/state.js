@@ -11,15 +11,14 @@ function useState(namespace) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 keys[_i] = arguments[_i];
             }
+            var $store = store_1.useStore();
             var mapped = composition_api_1.computed(function () {
                 var _a;
                 return (_a = module_1.mapTypedState(types_1.resolveNamespace(namespace))).to.apply(_a, keys);
             });
             var result = {};
             keys.forEach(function (key) {
-                result[key] = composition_api_1.computed(function () {
-                    return mapped.value[key].call({ $store: store_1.useStore() });
-                });
+                result[key] = composition_api_1.computed(function () { return mapped.value[key].call({ $store: $store }); });
             });
             return result;
         },
