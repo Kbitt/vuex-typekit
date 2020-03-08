@@ -1,9 +1,10 @@
 import { SubType } from '../module/types';
 import { Mutation } from 'vuex';
-import { MutationPayload } from '../module';
+import { MutationFn } from '../module';
+import { NamespaceRef } from './types';
 export declare type MutationRefMapper<Mutations> = {
     with: <K extends keyof SubType<Mutations, Mutation<any>>>(...keys: K[]) => {
-        [P in K]: MutationPayload<Mutations[P]> extends void ? () => void : (payload: MutationPayload<Mutations[P]>) => void;
+        [P in K]: MutationFn<Mutations[P]>;
     };
 };
-export declare function useMutataions<M>(namespace?: string): MutationRefMapper<M>;
+export declare function useMutataions<M>(namespace?: NamespaceRef): MutationRefMapper<M>;
