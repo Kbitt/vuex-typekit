@@ -14,7 +14,6 @@ export type StateRefMapper<S> = {
 export function useState<S>(namespace?: NamespaceRef): StateRefMapper<S> {
     return {
         with: <K extends keyof S>(...keys: K[]) => {
-            const $store = useStore()
             const mapped = computed(() =>
                 mapTypedState<S>(resolveNamespace(namespace)).to(...keys)
             )
@@ -22,7 +21,9 @@ export function useState<S>(namespace?: NamespaceRef): StateRefMapper<S> {
                 [P in K]: Readonly<Ref<Readonly<S[P]>>>
             }
             keys.forEach(key => {
-                result[key] = computed(() => mapped.value[key].call({ $store }))
+                result[key] = computed(() =>
+                    mapped.value[key].call({ $store: useStore() })
+                )
             })
             return result
         },

@@ -23,14 +23,13 @@ export function useMutataions<M>(
 ): MutationRefMapper<M> {
     return {
         with: <K extends keyof SubType<M, Mutation<any>>>(...keys: K[]) => {
-            const $store = useStore()
             const mapped = computed<Record<K, AnyMutationFn>>(() =>
                 mapTypedMutations<M>(resolveNamespace(namespace)).to(...keys)
             )
             const result = {} as Record<K, AnyMutationFn>
             keys.forEach(key => {
                 result[key] = (payload?: any) =>
-                    mapped.value[key].call({ $store }, payload)
+                    mapped.value[key].call({ $store: useStore() }, payload)
             })
 
             return result as Record<K, MutationFn<M[K]>>
