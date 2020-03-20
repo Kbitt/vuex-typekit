@@ -6,7 +6,7 @@ import {
     TodoMutations,
     TodoGetters,
 } from '../todo/todo'
-import { useActions, useGetters, useMutataions, useState } from '../../src'
+import { useActions, useGetters, useState, useMutations } from '../../src'
 
 export function createHookTodoComponent(namespace?: string) {
     return defineComponent({
@@ -19,7 +19,7 @@ export function createHookTodoComponent(namespace?: string) {
                     'filtered',
                     'notDoneCount'
                 ),
-                ...useMutataions<TodoMutations>(namespace).with(
+                ...useMutations<TodoMutations>(namespace).with(
                     'ADD_TODO',
                     'REMOVE_TODO'
                 ),

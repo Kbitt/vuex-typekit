@@ -18,7 +18,7 @@ export type MutationRefMapper<Mutations> = {
     }
 }
 
-export function useMutataions<M>(
+export function useMutations<M>(
     namespace?: NamespaceRef
 ): MutationRefMapper<M> {
     return {

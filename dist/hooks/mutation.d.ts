@@ -7,4 +7,4 @@ export declare type MutationRefMapper<Mutations> = {
         [P in K]: MutationFn<Mutations[P]>;
     };
 };
-export declare function useMutataions<M>(namespace?: NamespaceRef): MutationRefMapper<M>;
+export declare function useMutations<M>(namespace?: NamespaceRef): MutationRefMapper<M>;

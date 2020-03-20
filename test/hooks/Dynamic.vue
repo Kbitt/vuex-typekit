@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { useState, useMutataions } from '../../src'
+import { useState, useMutations } from '../../src'
 import { DynamicModuleState, DynamicModuleMutations } from './dynamic-module'
 import { defineComponent, computed, ref } from '@vue/composition-api'
 export default defineComponent({
@@ -23,7 +23,7 @@ export default defineComponent({
         return {
             namespace,
             ...useState<DynamicModuleState>(namespace).with('value'),
-            ...useMutataions<DynamicModuleMutations>(namespace).with(
+            ...useMutations<DynamicModuleMutations>(namespace).with(
                 'SET_VALUE'
             ),
         }

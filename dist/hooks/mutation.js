@@ -4,7 +4,7 @@ var module_1 = require("../module");
 var store_1 = require("./store");
 var types_1 = require("./types");
 var composition_api_1 = require("@vue/composition-api");
-function useMutataions(namespace) {
+function useMutations(namespace) {
     return {
         with: function () {
             var keys = [];
@@ -26,4 +26,4 @@ function useMutataions(namespace) {
         },
     };
 }
-exports.useMutataions = useMutataions;
+exports.useMutations = useMutations;
