@@ -1,6 +1,6 @@
-import { ActionContext, Mutation, Action, Getter } from 'vuex'
+import { ActionContext, Mutation, Action, Getter, ActionHandler } from 'vuex'
 import { SubType } from './types'
-import { ActionPayload } from './action'
+import { ActionPayload, ActionType } from './action'
 import { GetterResult } from './getter'
 import { MutationType } from './mutation'
 export interface TypedActionContext<
@@ -26,6 +26,37 @@ export interface TypedActionContext<
     rootGetters: GetterResult<RootGetters>
 }
 
+export type TypedActionFn<
+    P extends keyof SubType<Actions, Action<any, any>>,
+    State,
+    Mutations,
+    Actions,
+    Getters = any,
+    RootState = any,
+    RootGetters = any
+> = ActionPayload<Actions[P]> extends void
+    ? (
+          context: TypedActionContext<
+              State,
+              Mutations,
+              Actions,
+              Getters,
+              RootState,
+              RootGetters
+          >
+      ) => Promise<any> | void
+    : (
+          context: TypedActionContext<
+              State,
+              Mutations,
+              Actions,
+              Getters,
+              RootState,
+              RootGetters
+          >,
+          payload: ActionPayload<Actions[P]>
+      ) => Promise<any> | void
+
 export type CreateActionsOptions<
     State,
     Mutations,
@@ -34,30 +65,15 @@ export type CreateActionsOptions<
     RootState = any,
     RootGetters = any
 > = {
-    [P in keyof SubType<Actions, Action<any, any>>]: ActionPayload<
-        Actions[P]
-    > extends void
-        ? (
-              context: TypedActionContext<
-                  State,
-                  Mutations,
-                  Actions,
-                  Getters,
-                  RootState,
-                  RootGetters
-              >
-          ) => Promise<any> | void
-        : (
-              context: TypedActionContext<
-                  State,
-                  Mutations,
-                  Actions,
-                  Getters,
-                  RootState,
-                  RootGetters
-              >,
-              payload: ActionPayload<Actions[P]>
-          ) => Promise<any> | void
+    [P in keyof SubType<Actions, Action<any, any>>]: TypedActionFn<
+        P,
+        State,
+        Mutations,
+        Actions,
+        Getters,
+        RootState,
+        RootGetters
+    >
 }
 
 export function createActions<
@@ -76,8 +92,10 @@ export function createActions<
         RootState,
         RootGetters
     >
-): { [P in keyof typeof options]: Action<State, any> } {
-    const result = {} as { [P in keyof typeof options]: Action<State, any> }
+): { [P in keyof typeof options]: ActionHandler<State, RootState> } {
+    const result = {} as {
+        [P in keyof typeof options]: ActionHandler<State, RootState>
+    }
     Object.keys(options).forEach(key => {
         const k = key as keyof typeof options
         result[k] = function(

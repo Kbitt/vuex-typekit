@@ -1,13 +1,15 @@
 /// <reference types="./shims-vue" />
-import Vuex from 'vuex'
+import Vuex, { Store } from 'vuex'
 import VueTypekit from '../src'
+import CompositionApi from '@vue/composition-api'
 import { createLocalVue } from '@vue/test-utils'
 
-export const getLocalVue = () => {
+export const getLocalVue = (options?: { useStore: () => Store<any> }) => {
     const localVue = createLocalVue()
 
     localVue.use(Vuex)
-    localVue.use(VueTypekit)
+    localVue.use(CompositionApi)
+    localVue.use(VueTypekit, options)
     return localVue
 }
 

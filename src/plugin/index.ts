@@ -1,7 +1,9 @@
 import { PluginObject } from 'vue/types/umd'
-import { MapStateSelector, stateGetter } from '../module/state'
-import { MapMutationsSelector, vmMutations } from '../module/mutation'
+import { stateGetter } from '../module/state'
+import { vmMutations } from '../module/mutation'
 import { vmActions, vmGetters } from '../module'
+import { setUseStoreHook } from '../hooks/store'
+import { Store } from 'vuex'
 
 declare module 'vue/types/vue' {
     interface Vue {
@@ -16,9 +18,14 @@ declare module 'vue/types/vue' {
 // v.$state<{ a: number }>().get('a')
 // v.$mutations<{ foo: (state: any, data: { value: string }) => void; bar: (state: any) => void }>()
 //     .commit('bar')
-
-const plugin: PluginObject<void> = {
-    install: Vue => {
+export type VuexTypekitPluginOptions = {
+    useStore: () => Store<any>
+}
+const plugin: PluginObject<VuexTypekitPluginOptions> = {
+    install: (Vue, options) => {
+        if (options && options.useStore) {
+            setUseStoreHook(options.useStore)
+        }
         Vue.prototype.$state = stateGetter
         Vue.prototype.$mutations = vmMutations
         Vue.prototype.$actions = vmActions

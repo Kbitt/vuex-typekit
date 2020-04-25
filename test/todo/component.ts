@@ -6,7 +6,7 @@ import {
     mapTypedActions,
     mapTypedGetters,
 } from '../../src'
-const template = `
+export const template = `
 <div>
     <button type="button" id="add" @click="ADD_TODO">Add</button>
     <button type="button" id="clear" @click="clearDone">Clear Done</button>

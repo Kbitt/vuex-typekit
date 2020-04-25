@@ -13,6 +13,9 @@ import { mapTypedMutations, mapTypedState } from '../../src'
 export default Vue.extend({
     methods: {
         ...mapTypedMutations<TestMutations>().to('SET_VALUE'),
+        someMethod() {
+            this.SET_VALUE({ value: '' })
+        },
     },
     computed: {
         ...mapTypedState<TestState>().to('value'),

@@ -21,6 +21,11 @@ export type ActionPayload<T extends Action<any, any>> = T extends ActionObject<
     ? Parameters<T>[1]
     : void
 
+export type AnyActionFn = (payload?: any) => Promise<any>
+
+export type ActionFn<T extends Action<any, any>> = ActionPayload<T> extends void
+    ? () => Promise<any>
+    : (payload: ActionPayload<T>) => Promise<any>
 export type MappedAction<T extends Action<any, any>> = ActionPayload<
     T
 > extends void
@@ -48,12 +53,12 @@ export function mapTypedActions<T>(namespace?: string): MapActionsSelector<T> {
     }
 }
 
+export type ActionVmFn<T> = <K extends keyof SubType<T, Action<any, any>>>(
+    ...params: ActionPayload<T[K]> extends void ? [K] : [K, ActionPayload<T[K]>]
+) => Promise<any>
+
 export type VmActor<T> = {
-    dispatch: <K extends keyof SubType<T, Action<any, any>>>(
-        ...params: ActionPayload<T[K]> extends void
-            ? [K]
-            : [K, ActionPayload<T[K]>]
-    ) => Promise<any>
+    dispatch: ActionVmFn<T>
 }
 
 export function vmActions<Actions>(
