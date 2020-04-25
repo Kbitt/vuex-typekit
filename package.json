@@ -7,6 +7,10 @@
     "files": [
         "dist/*"
     ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Kbitt/vuex-typekit.git"
+    },
     "peerDependencies": {
         "@vue/composition-api": "^0.4.0",
         "vuex": "2 - 3"

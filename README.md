@@ -55,7 +55,7 @@ Declaring all of these interfaces might seem like a lot of extra work, but they'
 Now we can implement the module:
 
 ```typescript
-const store = new Store<TodoState>({
+export default new Store<TodoState>({
     state: () => ({
         todos: [],
         filter: {
@@ -65,7 +65,7 @@ const store = new Store<TodoState>({
     }),
     mutations: {
         ...createMutations<TodoState, TodoMutations>({
-            ADD_TODO: state => state.todos.push({ done: false, text: '' }),
+            ADD_TODO: (state) => state.todos.push({ done: false, text: '' }),
             REMOVE_TODO: (state, { index }) => state.todos.splice(index, 1),
             SET_DONE: (state, { index, done }) => {
                 state.todos[index].done = done
@@ -79,17 +79,18 @@ const store = new Store<TodoState>({
     },
     getters: {
         ...createGetters<TodoState, TodoGetters>({
-            filtered: state =>
+            filtered: (state) =>
                 state.todos.filter(
-                    todo =>
+                    (todo) =>
                         (state.filter.done === undefined ||
                             state.filter.done === todo.done) &&
                         (state.filter.text === undefined ||
                             todo.text.includes(state.filter.text))
                 ),
-            doneCount: state => state.todos.filter(todo => todo.done).length,
-            notDoneCount: state =>
-                state.todos.filter(todo => !todo.done).length,
+            doneCount: (state) =>
+                state.todos.filter((todo) => todo.done).length,
+            notDoneCount: (state) =>
+                state.todos.filter((todo) => !todo.done).length,
         }),
     },
     actions: {
@@ -101,7 +102,7 @@ const store = new Store<TodoState>({
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach(index => mutate('REMOVE_TODO', { index }))
+                    .forEach((index) => mutate('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, mutate }, { index }) => {
                 const todo = getters.filtered[index]
@@ -123,7 +124,7 @@ const store = new Store<TodoState>({
 })
 ```
 
-The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed. But the context passed to each action has a couple extra functions: `mutate` and `send`, which are strongly typed versions of `commit` and `dispatch` (and which are simply wrappers for the latter, respectively). All local mutation/action names and payload types are available when using these functions, but the original `commit` and `dispatch` are still there for calling outside the current module. The results of these utility functions are simply a map of mutations, actions, and getters, for a completely normal vuex module at runtime. No classes or decorators, just objects.
+The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct signature implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed. But the context passed to each action has a couple extra functions: `mutate` and `send`, which are strongly typed versions of `commit` and `dispatch` (and which are simply wrappers for the latter, respectively). All local mutation/action names and payload types are available when using these functions, but the original `commit` and `dispatch` are still there for calling outside the current module. The results of these utility functions are simply a map of mutations, actions, and getters, for a completely normal vuex module at runtime. No classes or decorators, just objects.
 
 ## New in 2.0: hooks for composition-api
 
