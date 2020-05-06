@@ -19,9 +19,7 @@ describe('dynamic namespace switching', () => {
     }
     const setInputValue = (id: string, value: string) => {
         const wrappedEl = wrapped.find(id)
-        const input = wrappedEl.element as HTMLInputElement
-        input.value = value
-        wrappedEl.trigger('input')
+        return Promise.resolve(wrappedEl.setValue(value))
     }
     const NS = '#namespace',
         VALUE = '#value'
@@ -43,43 +41,35 @@ describe('dynamic namespace switching', () => {
         expect(getInputValue(NS)).toBe('a')
 
         const A_VAL = 'set in A'
-        setInputValue(VALUE, A_VAL)
-        await localVue.nextTick()
+        await setInputValue(VALUE, A_VAL)
 
         expect(store.state.a?.value).toBe(A_VAL)
 
-        setInputValue(NS, 'b')
-        await localVue.nextTick()
+        await setInputValue(NS, 'b')
         expect(getInputValue(VALUE)).toBe('default')
         expect(getInputValue(NS)).toBe('b')
 
         const B_VAL = 'set in B'
-        setInputValue(VALUE, B_VAL)
-        await localVue.nextTick()
+        await setInputValue(VALUE, B_VAL)
 
         expect(store.state.b?.value).toBe(B_VAL)
 
-        setInputValue(NS, 'c')
-        await localVue.nextTick()
+        await setInputValue(NS, 'c')
         expect(getInputValue(VALUE)).toBe('default')
         expect(getInputValue(NS)).toBe('c')
 
         const C_VAL = 'set in C'
-        setInputValue(VALUE, C_VAL)
-        await localVue.nextTick()
+        await setInputValue(VALUE, C_VAL)
 
         expect(store.state.c?.value).toBe(C_VAL)
 
-        setInputValue(NS, 'a')
-        await localVue.nextTick()
+        await setInputValue(NS, 'a')
         expect(getInputValue(VALUE)).toBe(A_VAL)
 
-        setInputValue(NS, 'b')
-        await localVue.nextTick()
+        await setInputValue(NS, 'b')
         expect(getInputValue(VALUE)).toBe(B_VAL)
 
-        setInputValue(NS, 'c')
-        await localVue.nextTick()
+        await setInputValue(NS, 'c')
         expect(getInputValue(VALUE)).toBe(C_VAL)
     })
 })

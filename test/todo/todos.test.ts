@@ -30,8 +30,7 @@ describe('', () => {
 
     const runTest = async (Component: VueClass<any>, namespace?: string) => {
         const wrapped = shallowMount(Component, { localVue, store })
-        wrapped.find('#add').trigger('click')
-        await localVue.nextTick()
+        await wrapped.find('#add').trigger('click')
         expect(getState(namespace).todos.length).toBe(1)
         expect(getGetter('doneCount', namespace)).toBe(0)
         expect(getGetter('notDoneCount', namespace)).toBe(1)
@@ -58,8 +57,7 @@ describe('', () => {
         expect(getGetter('notDoneCount', namespace)).toBe(0)
         expect(getState(namespace).todos[0].done).toBe(true)
 
-        wrapped.find('#clear').trigger('click')
-        await localVue.nextTick()
+        await wrapped.find('#clear').trigger('click')
 
         expect(getState(namespace).todos.length).toBe(0)
         expect(getGetter('doneCount', namespace)).toBe(0)

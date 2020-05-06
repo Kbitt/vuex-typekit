@@ -53,9 +53,9 @@ describe('mutations', () => {
             store: $store,
         })
         const wrappedInput = wrapped.find('input')
-        expect((wrappedInput.element as HTMLInputElement).value).toBe('')
-        ;(wrappedInput.element as HTMLInputElement).value = TEST_VAL
-        await localVue.nextTick()
-        expect((wrappedInput.element as HTMLInputElement).value).toBe(TEST_VAL)
+        const el = wrappedInput.element as HTMLInputElement
+        expect(el.value).toBe('')
+        await wrappedInput.setValue(TEST_VAL)
+        expect(el.value).toBe(TEST_VAL)
     })
 })
