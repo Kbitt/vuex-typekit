@@ -84,6 +84,7 @@ export type CreateModuleOptions<
     RootGetters = void
 > = {
     state: State | (() => State)
+    modules?: Record<string, any>
 } & (Mutations extends void
     ? { mutations?: MutationTree<State> }
     : {
@@ -124,6 +125,7 @@ export function createModule<
     mutations,
     actions,
     getters,
+    modules,
 }: CreateModuleOptions<
     State,
     Mutations,
@@ -154,7 +156,7 @@ export function createModule<
         state,
         mutations: mutations
             ? createMutations<State, Mutations>(mutations as any)
-            : undefined,
+            : {},
         actions: actions
             ? createActions<
                   State,
@@ -164,12 +166,12 @@ export function createModule<
                   RootState,
                   RootGetters
               >(actions as any)
-            : undefined,
+            : {},
         getters: getters
             ? createGetters<State, Getters, RootState, RootGetters>(
                   getters as any
               )
-            : undefined,
+            : {},
     } as any
 }
 
@@ -212,7 +214,7 @@ export function createActions<
     const result = {} as {
         [P in keyof typeof options]: ActionHandler<State, RootState>
     }
-    Object.keys(options).forEach((key) => {
+    Object.keys(options).forEach(key => {
         const k = key as keyof typeof options
         result[k] = function (
             { commit, dispatch, ...context }: ActionContext<State, any>,

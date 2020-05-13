@@ -8,9 +8,9 @@ Now with support for `@vue/composition-api` as of 2.0. Use 1.x for pre-compositi
 
 Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write Vuex modules with useful type information that extends from the module's definition to its consumption.
 
-## TLDR: WHY
+## TLDR: Why?
 
-Wouldn't it be great if we could use vuex and get the benefits of static typing when using vuex?
+Wouldn't it be great if we could use vuex and get the benefits of static typing?
 
 Let's say we have a mutation defined like
 
@@ -22,9 +22,15 @@ In our actions it would really be beneficial to see something like this in our e
 
 If we forget to pass a payload:
 
+![Missing payload image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/missing_payload.png)
+
 If we pass the incorrect type of payload:
 
+![Incorrect payload image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/incorrect_payload.png)
+
 Or even if we try to call a mutation (or action) that doesn't exist:
+
+![Incorrect mutation image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/incorrect_mutation.png)
 
 We can't normally catch these kinds of errors at build time, but `vuex-typekit` makes this possible!
 
@@ -46,7 +52,7 @@ export interface TodoState {
 }
 
 export interface TodoMutations {
-    ADD_TODO: MutationType<TodoState>
+    ADD_TODO: MutationType<TodoState> // provide state type and optionally payload type
     SET_DONE: MutationType<TodoState, { index: number; done: boolean }>
     SET_TEXT: MutationType<TodoState, { index: number; text: string }>
     REMOVE_TODO: MutationType<TodoState, { index: number }>
@@ -55,13 +61,13 @@ export interface TodoMutations {
 }
 
 export interface TodoGetters {
-    filtered: GetterType<Todo[], TodoState>
+    filtered: GetterType<Todo[], TodoState> // provide return type and state, optionally the root state and root getters
     doneCount: GetterType<number, TodoState>
     notDoneCount: GetterType<number, TodoState>
 }
 
 export interface TodoActions {
-    clearDone: ActionType<TodoState>
+    clearDone: ActionType<TodoState> // provide state type and optionally payload type
     removeTodo: ActionType<TodoState, { index: number }>
     setDone: ActionType<TodoState, { index: number; done: boolean }>
     setText: ActionType<TodoState, { index: number; text: string }>
@@ -75,17 +81,17 @@ Declaring all of these interfaces might seem like a lot of extra work, but they'
 Now we can implement the module:
 
 ```typescript
-export default new Store<TodoState>({
-    state: () => ({
-        todos: [],
-        filter: {
-            done: undefined,
-            text: undefined,
-        },
-    }),
-    mutations: {
-        ...createMutations<TodoState, TodoMutations>({
-            ADD_TODO: (state) => state.todos.push({ done: false, text: '' }),
+export default new Store<TodoState>(
+    createModule<TodoState, TodoMutations, TodoActions, TodoGetters>({
+        state: () => ({
+            todos: [],
+            filter: {
+                done: undefined,
+                text: undefined,
+            },
+        }),
+        mutations: {
+            ADD_TODO: state => state.todos.push({ done: false, text: '' }),
             REMOVE_TODO: (state, { index }) => state.todos.splice(index, 1),
             SET_DONE: (state, { index, done }) => {
                 state.todos[index].done = done
@@ -95,26 +101,21 @@ export default new Store<TodoState>({
             },
             SET_FILTER_DONE: (state, { done }) => (state.filter.done = done),
             SET_FILTER_TEXT: (state, { text }) => (state.filter.text = text),
-        }),
-    },
-    getters: {
-        ...createGetters<TodoState, TodoGetters>({
-            filtered: (state) =>
+        },
+        getters: {
+            filtered: state =>
                 state.todos.filter(
-                    (todo) =>
+                    todo =>
                         (state.filter.done === undefined ||
                             state.filter.done === todo.done) &&
                         (state.filter.text === undefined ||
                             todo.text.includes(state.filter.text))
                 ),
-            doneCount: (state) =>
-                state.todos.filter((todo) => todo.done).length,
-            notDoneCount: (state) =>
-                state.todos.filter((todo) => !todo.done).length,
-        }),
-    },
-    actions: {
-        ...createActions<TodoState, TodoMutations, TodoActions, TodoGetters>({
+            doneCount: state => state.todos.filter(todo => todo.done).length,
+            notDoneCount: state =>
+                state.todos.filter(todo => !todo.done).length,
+        },
+        actions: {
             clearDone: ({ state, commit }) => {
                 state.todos
                     .map(({ done }, index) => ({ index, done }))
@@ -122,7 +123,7 @@ export default new Store<TodoState>({
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach((index) => commit('REMOVE_TODO', { index }))
+                    .forEach(index => commit('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]
@@ -139,23 +140,22 @@ export default new Store<TodoState>({
                 const realIndex = state.todos.indexOf(todo)
                 commit('SET_TEXT', { index: realIndex, text })
             },
-        }),
-    },
-})
+        },
+    })
+)
 ```
 
-The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct signature implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed and the context passed to each action is a little different: `commit` and `dispatch` are strongly typed based on the mutation and action interfaces. All local mutation/action names and payload types are available when using these special typed versions. If you want to use the untyped `commit` and `dispatch`, you can still call `commit.any` and `dispatch.any`, respectively. The results of these utility functions are simply normal . No classes or decorators, just objects.
+`createModule` takes all of our interfaces and requires typed implementations. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, `commit`, `dispatch` and `getters` are all typed, so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). If you want to use the untyped `commit` and `dispatch`, you can still call `commit.any` and `dispatch.any`, respectively. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
 
-## New in 2.0: hooks for composition-api
+## Hooks for composition-api
 
-Use hooks inside composition-api components. If you're using multiple instances of a generic module, you can switch between them in the same component by passing in a ref to the namespace. When the ref updates, the mapped refs and functions will safely react and use the new namespace.
+Use hooks inside composition-api components. Hook functions are optional and require `@vue/composition-api` to be installed. These hooks accept a namespace as either a string or a ref to a string. By passing a ref, a single component can switch between more than one namespaced module that implements the same module interface.
 
 ```typescript
-
 // options must be passed in to use the hooks. useStore can be either a regular function that
 // returns the store instance, or a hook function using the provide/inject pattern
 Vue.use(VuexTypekit, {
-    useStore: () => // return store
+    useStore: () => store, // return store
 })
 export default defineComponent({
     setup: () => {

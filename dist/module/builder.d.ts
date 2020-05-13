@@ -20,6 +20,7 @@ export interface TypedActionContext<State, Mutations, Actions, Getters = any, Ro
 export declare type TypedActionFn<P extends keyof SubType<Actions, Action<any, any>>, State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = ActionPayload<Actions[P]> extends void ? (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>) => Promise<any> | void : (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>, payload: ActionPayload<Actions[P]>) => Promise<any> | void;
 export declare type CreateModuleOptions<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void> = {
     state: State | (() => State);
+    modules?: Record<string, any>;
 } & (Mutations extends void ? {
     mutations?: MutationTree<State>;
 } : {
@@ -33,7 +34,7 @@ export declare type CreateModuleOptions<State, Mutations = void, Actions = void,
 } : {
     getters: CreateGettersOptions<State, Getters, RootState, RootGetters>;
 });
-export declare function createModule<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void>({ state, mutations, actions, getters, }: CreateModuleOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
+export declare function createModule<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void>({ state, mutations, actions, getters, modules, }: CreateModuleOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
     state: typeof state;
 } & (Mutations extends void ? {
     mutations?: MutationTree<State>;

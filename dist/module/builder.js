@@ -23,18 +23,18 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 function createModule(_a) {
-    var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters;
+    var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters, modules = _a.modules;
     return {
         state: state,
         mutations: mutations
             ? createMutations(mutations)
-            : undefined,
+            : {},
         actions: actions
             ? createActions(actions)
-            : undefined,
+            : {},
         getters: getters
             ? createGetters(getters)
-            : undefined,
+            : {},
     };
 }
 exports.createModule = createModule;
