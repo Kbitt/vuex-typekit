@@ -9,11 +9,32 @@ import {
     GetterTree,
     ActionTree,
     MutationTree,
+    CommitOptions,
 } from 'vuex'
 import { SubType } from './types'
-import { ActionPayload, ActionType } from './action'
-import { GetterResult } from './getter'
+import { ActionPayload } from './action'
+import { TypedGetters } from './getter'
 import { MutationType } from './mutation'
+
+export interface TypedCommit<Mutations> extends Commit {
+    <K extends keyof SubType<Mutations, Mutation<any>>>(
+        ...params: Parameters<Mutations[K]>[1] extends void
+            ? [K] | [K, CommitOptions]
+            :
+                  | [K, Parameters<Mutations[K]>[1]]
+                  | [K, Parameters<Mutations[K]>[1], CommitOptions]
+    ): void
+    any: Commit
+}
+
+export interface TypedDispatch<Actions> extends Dispatch {
+    <K extends keyof SubType<Actions, Action<any, any>>>(
+        ...params: Parameters<Actions[K]>[1] extends void
+            ? [K]
+            : [K, Parameters<Actions[K]>[1]]
+    ): Promise<any> | void
+    any: Dispatch
+}
 export interface TypedActionContext<
     State,
     Mutations,
@@ -21,30 +42,16 @@ export interface TypedActionContext<
     Getters = any,
     RootState = any,
     RootGetters = any
-> {
+> extends ActionContext<State, RootState> {
     state: State
-    commit: {
-        <K extends keyof SubType<Mutations, Mutation<any>>>(
-            ...params: Parameters<Mutations[K]>[1] extends void
-                ? [K]
-                : [K, Parameters<Mutations[K]>[1]]
-        ): void
-        any: Commit
-    }
-    dispatch: {
-        <K extends keyof SubType<Actions, Action<any, any>>>(
-            ...params: Parameters<Actions[K]>[1] extends void
-                ? [K]
-                : [K, Parameters<Actions[K]>[1]]
-        ): Promise<any> | void
-        any: Dispatch
-    }
-    getters: GetterResult<Getters>
+    commit: TypedCommit<Mutations>
+    dispatch: TypedDispatch<Actions>
+    getters: TypedGetters<Getters>
     rootState: RootState
-    rootGetters: GetterResult<RootGetters>
+    rootGetters: TypedGetters<RootGetters>
 }
 
-export type TypedActionFn<
+export type TypedActionHandler<
     P extends keyof SubType<Actions, Action<any, any>>,
     State,
     Mutations,
@@ -183,7 +190,7 @@ export type CreateActionsOptions<
     RootState = any,
     RootGetters = any
 > = {
-    [P in keyof SubType<Actions, Action<any, any>>]: TypedActionFn<
+    [P in keyof SubType<Actions, Action<any, any>>]: TypedActionHandler<
         P,
         State,
         Mutations,
@@ -249,9 +256,9 @@ export type CreateGettersOptions<
 > = {
     [P in keyof SubType<Getters, Getter<any, any>>]: (
         state: State,
-        getters: GetterResult<Getters>,
+        getters: TypedGetters<Getters>,
         rootState: RootState,
-        rootGetters: GetterResult<RootGetters>
+        rootGetters: TypedGetters<RootGetters>
     ) => ReturnType<Getters[P]>
 }
 

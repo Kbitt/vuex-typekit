@@ -7,7 +7,7 @@ export declare type MappedGetter<T extends Getter<any, any>> = (this: VueForMapp
 export declare type MappedGetters<T> = {
     [P in keyof T]: T[P] extends Getter<any, any> ? MappedGetter<T[P]> : never;
 };
-export declare type GetterResult<T> = {
+export declare type TypedGetters<T> = {
     [P in keyof SubType<T, Getter<any, any>>]: ReturnType<T[P]>;
 };
 export declare type MapGettersSelector<T> = {

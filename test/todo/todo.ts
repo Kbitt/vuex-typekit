@@ -43,8 +43,8 @@ export interface TodoActions {
     setText: ActionType<TodoState, { index: number; text: string }>
 }
 
-export const createTodoModule = (): Module<TodoState, any> => ({
-    state: () => ({
+export const createTodoModule = () => ({
+    state: (): TodoState => ({
         todos: [],
         filter: {
             done: undefined,
@@ -53,7 +53,7 @@ export const createTodoModule = (): Module<TodoState, any> => ({
     }),
     mutations: {
         ...createMutations<TodoState, TodoMutations>({
-            ADD_TODO: (state) => state.todos.push({ done: false, text: '' }),
+            ADD_TODO: state => state.todos.push({ done: false, text: '' }),
             REMOVE_TODO: (state, { index }) => state.todos.splice(index, 1),
             SET_DONE: (state, { index, done }) => {
                 state.todos[index].done = done
@@ -67,18 +67,17 @@ export const createTodoModule = (): Module<TodoState, any> => ({
     },
     getters: {
         ...createGetters<TodoState, TodoGetters>({
-            filtered: (state) =>
+            filtered: state =>
                 state.todos.filter(
-                    (todo) =>
+                    todo =>
                         (state.filter.done === undefined ||
                             state.filter.done === todo.done) &&
                         (state.filter.text === undefined ||
                             todo.text.includes(state.filter.text))
                 ),
-            doneCount: (state) =>
-                state.todos.filter((todo) => todo.done).length,
-            notDoneCount: (state) =>
-                state.todos.filter((todo) => !todo.done).length,
+            doneCount: state => state.todos.filter(todo => todo.done).length,
+            notDoneCount: state =>
+                state.todos.filter(todo => !todo.done).length,
         }),
     },
     actions: {
@@ -90,7 +89,7 @@ export const createTodoModule = (): Module<TodoState, any> => ({
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach((index) => commit('REMOVE_TODO', { index }))
+                    .forEach(index => commit('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]

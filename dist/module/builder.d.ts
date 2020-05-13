@@ -1,23 +1,25 @@
-import { Mutation, Action, Getter, ActionHandler, Commit, Dispatch, GetterTree, ActionTree, MutationTree } from 'vuex';
+import { ActionContext, Mutation, Action, Getter, ActionHandler, Commit, Dispatch, GetterTree, ActionTree, MutationTree, CommitOptions } from 'vuex';
 import { SubType } from './types';
 import { ActionPayload } from './action';
-import { GetterResult } from './getter';
+import { TypedGetters } from './getter';
 import { MutationType } from './mutation';
-export interface TypedActionContext<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> {
-    state: State;
-    commit: {
-        <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] : [K, Parameters<Mutations[K]>[1]]): void;
-        any: Commit;
-    };
-    dispatch: {
-        <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]): Promise<any> | void;
-        any: Dispatch;
-    };
-    getters: GetterResult<Getters>;
-    rootState: RootState;
-    rootGetters: GetterResult<RootGetters>;
+export interface TypedCommit<Mutations> extends Commit {
+    <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] | [K, CommitOptions] : [K, Parameters<Mutations[K]>[1]] | [K, Parameters<Mutations[K]>[1], CommitOptions]): void;
+    any: Commit;
 }
-export declare type TypedActionFn<P extends keyof SubType<Actions, Action<any, any>>, State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = ActionPayload<Actions[P]> extends void ? (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>) => Promise<any> | void : (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>, payload: ActionPayload<Actions[P]>) => Promise<any> | void;
+export interface TypedDispatch<Actions> extends Dispatch {
+    <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]): Promise<any> | void;
+    any: Dispatch;
+}
+export interface TypedActionContext<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> extends ActionContext<State, RootState> {
+    state: State;
+    commit: TypedCommit<Mutations>;
+    dispatch: TypedDispatch<Actions>;
+    getters: TypedGetters<Getters>;
+    rootState: RootState;
+    rootGetters: TypedGetters<RootGetters>;
+}
+export declare type TypedActionHandler<P extends keyof SubType<Actions, Action<any, any>>, State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = ActionPayload<Actions[P]> extends void ? (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>) => Promise<any> | void : (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>, payload: ActionPayload<Actions[P]>) => Promise<any> | void;
 export declare type CreateModuleOptions<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void> = {
     state: State | (() => State);
     modules?: Record<string, any>;
@@ -56,13 +58,13 @@ export declare function createModule<State, Mutations = void, Actions = void, Ge
     };
 });
 export declare type CreateActionsOptions<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = {
-    [P in keyof SubType<Actions, Action<any, any>>]: TypedActionFn<P, State, Mutations, Actions, Getters, RootState, RootGetters>;
+    [P in keyof SubType<Actions, Action<any, any>>]: TypedActionHandler<P, State, Mutations, Actions, Getters, RootState, RootGetters>;
 };
 export declare function createActions<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any>(options: CreateActionsOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
     [P in keyof typeof options]: ActionHandler<State, RootState>;
 };
 export declare type CreateGettersOptions<State, Getters, RootState = any, RootGetters = any> = {
-    [P in keyof SubType<Getters, Getter<any, any>>]: (state: State, getters: GetterResult<Getters>, rootState: RootState, rootGetters: GetterResult<RootGetters>) => ReturnType<Getters[P]>;
+    [P in keyof SubType<Getters, Getter<any, any>>]: (state: State, getters: TypedGetters<Getters>, rootState: RootState, rootGetters: TypedGetters<RootGetters>) => ReturnType<Getters[P]>;
 };
 export declare function createGetters<State, Getters, RootState = any, RootGetters = any>(options: CreateGettersOptions<State, Getters, RootState, RootGetters>): {
     [P in keyof typeof options]: Getter<State, RootState>;

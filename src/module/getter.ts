@@ -13,7 +13,7 @@ export type MappedGetters<T> = {
     [P in keyof T]: T[P] extends Getter<any, any> ? MappedGetter<T[P]> : never
 }
 
-export type GetterResult<T> = {
+export type TypedGetters<T> = {
     [P in keyof SubType<T, Getter<any, any>>]: ReturnType<T[P]>
 }
 
