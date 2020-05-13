@@ -36,7 +36,7 @@ We can't normally catch these kinds of errors at build time, but `vuex-typekit` 
 
 To take advantage of the utility functions, it is first necessary to declare interfaces for your module's Mutations, Actions and Getters (whichever are necessary for your module). This might seem laborious at first, but it makes implementing them a bit easier and we'll use them later to get type safe access to the store. It also makes it easier to extend module interfaces.
 
-**Important to note**: _DO NOT extends Vuex's `MutationTree`, `ActionTree` and `GetterTree` interfaces, the index signature of those interfaces will weaken the typing. Instead, using the utility types in the example below will create module component trees that implicitly satisfies these interfaces._
+**Important to note**: _DO NOT extend Vuex's `MutationTree`, `ActionTree` and `GetterTree` interfaces, the index signature of those interfaces will weaken the typing. Instead, using the utility types in the example below will create module component trees that implicitly satisfies these interfaces._
 
 ```typescript
 export type Todo = {
@@ -75,8 +75,6 @@ export interface TodoActions {
 ```
 
 The `MutationType` and `ActionType` types let you declare your mutations and actions based on state as well as the type of the payload. `GetterType` types a getter to its return type and state, and optionally the types of getters, root state and root getters.
-
-Declaring all of these interfaces might seem like a lot of extra work, but they'll make it a bit easier to implement the actual module functions, and much easier to access them in your Vue components.
 
 Now we can implement the module:
 
