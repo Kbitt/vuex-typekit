@@ -2,8 +2,6 @@
 
 ### A set of handy types and utility functions for creating more strongly typed Vuex modules.
 
-Now with support for `@vue/composition-api` as of 2.0. Use 1.x for pre-composition api. 3.0 will support vue@3.
-
 ## The Problem
 
 Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write Vuex modules with useful type information that extends from the module's definition to its consumption.
@@ -36,7 +34,9 @@ We can't normally catch these kinds of errors at build time, but `vuex-typekit` 
 
 ## How To
 
-To take advantage of the utility functions, it is first necessary to declare interfaces for your module's Mutations, Actions and Getters (whichever are necessary for your module). It's important to note: DO NOT extends Vuex's `MutationTree`, `ActionTree` and `GetterTree` interfaces, the index signature of those interfaces will weaken the typing. Instead, using the utility types in the example below will create module component trees that implicitly satisfies these interfaces.
+To take advantage of the utility functions, it is first necessary to declare interfaces for your module's Mutations, Actions and Getters (whichever are necessary for your module). This might seem laborious at first, but it makes implementing them a bit easier and we'll use them later to get type safe access to the store. It also makes it easier to extend module interfaces.
+
+**Important to note**: _DO NOT extends Vuex's `MutationTree`, `ActionTree` and `GetterTree` interfaces, the index signature of those interfaces will weaken the typing. Instead, using the utility types in the example below will create module component trees that implicitly satisfies these interfaces._
 
 ```typescript
 export type Todo = {
