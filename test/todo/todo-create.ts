@@ -1,58 +1,16 @@
-import {
-    MutationType,
-    GetterType,
-    createMutations,
-    createGetters,
-    ActionType,
-    createActions,
-} from '../../src'
-import { Module } from 'vuex'
+import { createModule } from '../../src'
+import { TodoState, TodoMutations, TodoActions, TodoGetters } from './todo'
 
-export type Todo = {
-    done: boolean
-    text: string
-}
-
-export interface TodoState {
-    todos: Todo[]
-    filter: {
-        done: boolean | undefined
-        text: string | undefined
-    }
-}
-
-export interface TodoMutations {
-    ADD_TODO: MutationType<TodoState>
-    SET_DONE: MutationType<TodoState, { index: number; done: boolean }>
-    SET_TEXT: MutationType<TodoState, { index: number; text: string }>
-    REMOVE_TODO: MutationType<TodoState, { index: number }>
-    SET_FILTER_DONE: MutationType<TodoState, { done: boolean | undefined }>
-    SET_FILTER_TEXT: MutationType<TodoState, { text: string | undefined }>
-}
-
-export interface TodoGetters {
-    filtered: GetterType<Todo[], TodoState>
-    doneCount: GetterType<number, TodoState>
-    notDoneCount: GetterType<number, TodoState>
-}
-
-export interface TodoActions {
-    clearDone: ActionType<TodoState>
-    removeTodo: ActionType<TodoState, { index: number }>
-    setDone: ActionType<TodoState, { index: number; done: boolean }>
-    setText: ActionType<TodoState, { index: number; text: string }>
-}
-
-export const createTodoModule = (): Module<TodoState, any> => ({
-    state: () => ({
-        todos: [],
-        filter: {
-            done: undefined,
-            text: undefined,
-        },
-    }),
-    mutations: {
-        ...createMutations<TodoState, TodoMutations>({
+export const createTodoModule = () =>
+    createModule<TodoState, TodoMutations, TodoActions, TodoGetters>({
+        state: () => ({
+            todos: [],
+            filter: {
+                done: undefined,
+                text: undefined,
+            },
+        }),
+        mutations: {
             ADD_TODO: (state) => state.todos.push({ done: false, text: '' }),
             REMOVE_TODO: (state, { index }) => state.todos.splice(index, 1),
             SET_DONE: (state, { index, done }) => {
@@ -63,10 +21,8 @@ export const createTodoModule = (): Module<TodoState, any> => ({
             },
             SET_FILTER_DONE: (state, { done }) => (state.filter.done = done),
             SET_FILTER_TEXT: (state, { text }) => (state.filter.text = text),
-        }),
-    },
-    getters: {
-        ...createGetters<TodoState, TodoGetters>({
+        },
+        getters: {
             filtered: (state) =>
                 state.todos.filter(
                     (todo) =>
@@ -79,10 +35,8 @@ export const createTodoModule = (): Module<TodoState, any> => ({
                 state.todos.filter((todo) => todo.done).length,
             notDoneCount: (state) =>
                 state.todos.filter((todo) => !todo.done).length,
-        }),
-    },
-    actions: {
-        ...createActions<TodoState, TodoMutations, TodoActions, TodoGetters>({
+        },
+        actions: {
             clearDone: ({ state, commit }) => {
                 state.todos
                     .map(({ done }, index) => ({ index, done }))
@@ -107,6 +61,5 @@ export const createTodoModule = (): Module<TodoState, any> => ({
                 const realIndex = state.todos.indexOf(todo)
                 commit('SET_TEXT', { index: realIndex, text })
             },
-        }),
-    },
-})
+        },
+    })

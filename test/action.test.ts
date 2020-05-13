@@ -38,11 +38,13 @@ const createStore = () =>
         actions: {
             ...createActions<TestState, TestMutations, TestAction, TestGetters>(
                 {
-                    setValue: ({ mutate }, payload) => {
-                        mutate('SET_VALUE', payload)
+                    setValue: ({ commit }, payload) => {
+                        commit('SET_VALUE', payload)
                     },
-                    prependValue: ({ state, send }) => {
-                        return send('setValue', { value: 'Mr. ' + state.value })
+                    prependValue: ({ state, dispatch }) => {
+                        return dispatch('setValue', {
+                            value: 'Mr. ' + state.value,
+                        })
                     },
                 }
             ),

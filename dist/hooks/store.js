@@ -7,7 +7,7 @@ function setUseStoreHook(hook) {
 exports.setUseStoreHook = setUseStoreHook;
 function useStore() {
     if (!useStoreHook)
-        throw new Error('useStore hook has not been provided to vuex-typekit');
+        throw new Error('useStore hook has not been provided to vuex-typekit, make sure to set it when calling Vue.use(VuexTypekit)');
     return useStoreHook();
 }
 exports.useStore = useStore;

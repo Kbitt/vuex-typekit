@@ -8,6 +8,26 @@ Now with support for `@vue/composition-api` as of 2.0. Use 1.x for pre-compositi
 
 Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write Vuex modules with useful type information that extends from the module's definition to its consumption.
 
+## TLDR: WHY
+
+Wouldn't it be great if we could use vuex and get the benefits of static typing when using vuex?
+
+Let's say we have a mutation defined like
+
+```typescript
+SET_VALUE: (state, { value: string }) => (state.value = value)
+```
+
+In our actions it would really be beneficial to see something like this in our editor:
+
+If we forget to pass a payload:
+
+If we pass the incorrect type of payload:
+
+Or even if we try to call a mutation (or action) that doesn't exist:
+
+We can't normally catch these kinds of errors at build time, but `vuex-typekit` makes this possible!
+
 ## How To
 
 To take advantage of the utility functions, it is first necessary to declare interfaces for your module's Mutations, Actions and Getters (whichever are necessary for your module). It's important to note: DO NOT extends Vuex's `MutationTree`, `ActionTree` and `GetterTree` interfaces, the index signature of those interfaces will weaken the typing. Instead, using the utility types in the example below will create module component trees that implicitly satisfies these interfaces.
@@ -95,36 +115,36 @@ export default new Store<TodoState>({
     },
     actions: {
         ...createActions<TodoState, TodoMutations, TodoActions, TodoGetters>({
-            clearDone: ({ state, mutate }) => {
+            clearDone: ({ state, commit }) => {
                 state.todos
                     .map(({ done }, index) => ({ index, done }))
                     .filter(({ done }) => done)
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach((index) => mutate('REMOVE_TODO', { index }))
+                    .forEach((index) => commit('REMOVE_TODO', { index }))
             },
-            removeTodo: ({ state, getters, mutate }, { index }) => {
+            removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]
                 const idx = state.todos.indexOf(todo)
-                mutate('REMOVE_TODO', { index: idx })
+                commit('REMOVE_TODO', { index: idx })
             },
-            setDone: ({ state, mutate, getters }, { index, done }) => {
+            setDone: ({ state, commit, getters }, { index, done }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                mutate('SET_DONE', { index: realIndex, done })
+                commit('SET_DONE', { index: realIndex, done })
             },
-            setText: ({ state, mutate, getters }, { index, text }) => {
+            setText: ({ state, commit, getters }, { index, text }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                mutate('SET_TEXT', { index: realIndex, text })
+                commit('SET_TEXT', { index: realIndex, text })
             },
         }),
     },
 })
 ```
 
-The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct signature implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed. But the context passed to each action has a couple extra functions: `mutate` and `send`, which are strongly typed versions of `commit` and `dispatch` (and which are simply wrappers for the latter, respectively). All local mutation/action names and payload types are available when using these functions, but the original `commit` and `dispatch` are still there for calling outside the current module. The results of these utility functions are simply a map of mutations, actions, and getters, for a completely normal vuex module at runtime. No classes or decorators, just objects.
+The `createMutations` and `createGetters` functions simply take the state and mutation types we defined and requires correct signature implementations be passed into them (which are returned by the result). And since the parameters are defined in our interfaces, they're already implicitly typed in the implentations (no `payload?: any`). In `createActions` a little bit more magic happens. For one, all of the getters can be fully typed and the context passed to each action is a little different: `commit` and `dispatch` are strongly typed based on the mutation and action interfaces. All local mutation/action names and payload types are available when using these special typed versions. If you want to use the untyped `commit` and `dispatch`, you can still call `commit.any` and `dispatch.any`, respectively. The results of these utility functions are simply normal . No classes or decorators, just objects.
 
 ## New in 2.0: hooks for composition-api
 

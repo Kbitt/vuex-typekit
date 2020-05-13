@@ -1,11 +1,18 @@
 import { getLocalVue } from '../_init'
 import { Store } from 'vuex'
 import { TodoState, createTodoModule } from './todo'
+import { createTodoModule as createTodoB } from './todo-create'
 import createTodoComponent from './component'
 import { createHookTodoComponent } from '../hooks/component'
-import { mount, VueClass, shallowMount } from '@vue/test-utils'
+import { VueClass, shallowMount } from '@vue/test-utils'
 
-describe('', () => {
+interface RunTestParams {
+    component: VueClass<any>
+    namespace?: string
+    useCreateModule?: boolean
+}
+
+describe('test todos', () => {
     let localVue: ReturnType<typeof getLocalVue>
     let store: Store<TodoState>
 
@@ -23,13 +30,16 @@ describe('', () => {
         store.dispatch(namespace ? `${namespace}/${name}` : name, payload)
     }
 
+    const createStore = (useCreateModule: boolean) => {
+        store = new Store(useCreateModule ? createTodoB() : createTodoModule())
+    }
+
     beforeEach(() => {
         localVue = getLocalVue({ useStore: () => store })
-        store = new Store(createTodoModule())
     })
 
-    const runTest = async (Component: VueClass<any>, namespace?: string) => {
-        const wrapped = shallowMount(Component, { localVue, store })
+    const runTest = async ({ component, namespace }: RunTestParams) => {
+        const wrapped = shallowMount(component, { localVue, store })
         await wrapped.find('#add').trigger('click')
         expect(getState(namespace).todos.length).toBe(1)
         expect(getGetter('doneCount', namespace)).toBe(0)
@@ -72,42 +82,89 @@ describe('', () => {
         expect(wrapped.findAll('li').length).toBe(3)
     }
 
-    it('test mapped todos component', async () => {
-        await runTest(createTodoComponent())
-    })
+    const getTestName = (name: string, useCreateModule: boolean) =>
+        `${name} (useCreateModule = ${useCreateModule})`
 
-    it('test vm todos component', async () => {
-        await runTest(createTodoComponent(true))
-    })
+    ;[true, false].forEach(useCreateModule => {
+        it(
+            getTestName('test mapped todos component', useCreateModule),
+            async () => {
+                createStore(useCreateModule)
+                await runTest({
+                    component: createTodoComponent(),
+                    useCreateModule,
+                })
+            }
+        )
 
-    it('test mapped todos w/ namespace', async () => {
-        const namespace = 'subTodos'
-        store.registerModule(namespace, {
-            ...createTodoModule(),
-            namespaced: true,
+        it(
+            getTestName('test vm todos component', useCreateModule),
+            async () => {
+                createStore(useCreateModule)
+                await runTest({
+                    component: createTodoComponent(true),
+                    useCreateModule,
+                })
+            }
+        )
+
+        it(
+            getTestName('test mapped todos w/ namespace', useCreateModule),
+            async () => {
+                createStore(useCreateModule)
+                const namespace = 'subTodos'
+                store.registerModule(namespace, {
+                    ...createTodoModule(),
+                    namespaced: true,
+                })
+                await runTest({
+                    component: createTodoComponent(false, namespace),
+                    namespace,
+                    useCreateModule,
+                })
+            }
+        )
+
+        it(
+            getTestName('test vm todos w/ namespace', useCreateModule),
+            async () => {
+                createStore(useCreateModule)
+                const namespace = 'subTodos'
+                store.registerModule(namespace, {
+                    ...createTodoModule(),
+                    namespaced: true,
+                })
+                await runTest({
+                    component: createTodoComponent(true, namespace),
+                    namespace,
+                    useCreateModule,
+                })
+            }
+        )
+
+        it(getTestName('test hooks as root', useCreateModule), async () => {
+            createStore(useCreateModule)
+            await runTest({
+                component: createHookTodoComponent(),
+                useCreateModule,
+            })
         })
-        await runTest(createTodoComponent(false, namespace), namespace)
-    })
 
-    it('test vm todos w/ namespace', async () => {
-        const namespace = 'subTodos'
-        store.registerModule(namespace, {
-            ...createTodoModule(),
-            namespaced: true,
-        })
-        await runTest(createTodoComponent(true, namespace), namespace)
-    })
-
-    it('test hooks as root', async () => {
-        await runTest(createHookTodoComponent())
-    })
-
-    it('test hooks w/ namespace', async () => {
-        const namespace = 'subTodos'
-        store.registerModule(namespace, {
-            ...createTodoModule(),
-            namespaced: true,
-        })
-        await runTest(createHookTodoComponent(namespace), namespace)
+        it(
+            getTestName('test hooks w/ namespace', useCreateModule),
+            async () => {
+                createStore(useCreateModule)
+                const namespace = 'subTodos'
+                store.registerModule(namespace, {
+                    ...createTodoModule(),
+                    namespaced: true,
+                })
+                await runTest({
+                    component: createHookTodoComponent(namespace),
+                    namespace,
+                    useCreateModule,
+                })
+            }
+        )
     })
 })
