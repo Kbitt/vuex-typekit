@@ -280,47 +280,51 @@ export function createActions<
             { commit, dispatch, ...context }: ActionContext<State, any>,
             payload?: any
         ) {
-            const forTypedCommit = commit as TypedCommit<Mutations>
-            forTypedCommit.typed = commit
-            forTypedCommit.root = function (namespace) {
+            const wrappedCommit = function (this: any, ...args: any) {
+                return commit.apply(this, args)
+            } as TypedCommit<Mutations>
+            wrappedCommit.typed = wrappedCommit
+            wrappedCommit.root = function (namespace) {
                 return {
                     typed: function () {
                         const [type, payload] = arguments
                         const path = namespace ? namespace + '/' + type : type
-                        commit(path, payload, {
+                        wrappedCommit(path, payload, {
                             root: true,
                         })
                     },
                 }
             }
 
-            forTypedCommit.sub = function (namespace) {
+            wrappedCommit.sub = function (namespace) {
                 return {
                     typed: function () {
                         const [type, payload] = arguments
                         const path = namespace + '/' + type
-                        commit(path, payload)
+                        wrappedCommit(path, payload)
                     },
                 }
             }
 
-            const forTypedDispatch = dispatch as TypedDispatch<Actions>
-            forTypedDispatch.typed = dispatch
-            forTypedDispatch.root = function (namespace) {
+            const wrappedDispatch = function (this: any, ...args: any) {
+                return dispatch.apply(this, args)
+            } as TypedDispatch<Actions>
+            wrappedDispatch.typed = wrappedDispatch
+            wrappedDispatch.root = function (namespace) {
                 return {
                     typed: function () {
                         const [type, payload] = arguments
                         const path = namespace ? namespace + '/' + type : type
-                        return dispatch(path, payload, { root: true })
+                        return wrappedDispatch(path, payload, { root: true })
                     },
                 }
             }
-            forTypedDispatch.sub = function (namespace) {
+            wrappedDispatch.sub = function (namespace) {
                 return {
                     typed: function () {
                         const [type, payload] = arguments
                         const path = namespace + '/' + type
-                        return dispatch(path, payload)
+                        return wrappedDispatch(path, payload)
                     },
                 }
             }
@@ -329,8 +333,8 @@ export function createActions<
                     this,
                     {
                         ...context,
-                        commit: forTypedCommit,
-                        dispatch: forTypedDispatch,
+                        commit: wrappedCommit,
+                        dispatch: wrappedDispatch,
                     },
                     payload
                 )
