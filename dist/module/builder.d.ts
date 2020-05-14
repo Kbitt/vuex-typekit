@@ -8,12 +8,12 @@ export interface TypedCommit<Mutations> extends Commit {
         <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] : [K, Parameters<Mutations[K]>[1]]): void;
     };
     root<M>(namespace?: string): {
-        commit: {
+        typed: {
             <K extends keyof SubType<M, Mutation<any>>>(...params: Parameters<M[K]>[1] extends void ? [K] : [K, Parameters<M[K]>[1]]): void;
         };
     };
     sub<M>(namespace: string): {
-        commit: {
+        typed: {
             <K extends keyof SubType<M, Mutation<any>>>(...params: Parameters<M[K]>[1] extends void ? [K] : [K, Parameters<M[K]>[1]]): void;
         };
     };
@@ -23,7 +23,7 @@ export interface TypedDispatch<Actions> extends Dispatch {
         <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]): Promise<any> | void;
     };
     root<A>(namespace?: string): {
-        dispatch: {
+        typed: {
             <K extends keyof SubType<A, Action<any, any>>>(...params: Parameters<A[K]>[1] extends void ? [K] : [K, Parameters<A[K]>[1]]): Promise<any> | void;
         };
     };
@@ -34,7 +34,7 @@ export interface TypedDispatch<Actions> extends Dispatch {
      * @param namespace Namespace of the submodule to call
      */
     sub<A>(namespace: string): {
-        dispatch: {
+        typed: {
             <K extends keyof SubType<A, Action<any, any>>>(...params: Parameters<A[K]>[1] extends void ? [K] : [K, Parameters<A[K]>[1]]): Promise<any> | void;
         };
     };

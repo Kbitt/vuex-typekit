@@ -62,51 +62,61 @@ function createActions(options) {
         var k = key;
         result[k] = function (_a, payload) {
             var commit = _a.commit, dispatch = _a.dispatch, context = __rest(_a, ["commit", "dispatch"]);
-            var forTypedCommit = commit;
-            forTypedCommit.typed = commit;
-            forTypedCommit.root = function (namespace) {
+            var wrappedCommit = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return commit.apply(this, args);
+            };
+            wrappedCommit.typed = wrappedCommit;
+            wrappedCommit.root = function (namespace) {
                 return {
-                    commit: function () {
+                    typed: function () {
                         var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
                         var path = namespace ? namespace + '/' + type : type;
-                        commit(path, payload, {
+                        wrappedCommit(path, payload, {
                             root: true,
                         });
                     },
                 };
             };
-            forTypedCommit.sub = function (namespace) {
+            wrappedCommit.sub = function (namespace) {
                 return {
-                    commit: function () {
+                    typed: function () {
                         var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
                         var path = namespace + '/' + type;
-                        commit(path, payload, {
-                            root: true,
-                        });
+                        wrappedCommit(path, payload);
                     },
                 };
             };
-            var forTypedDispatch = dispatch;
-            forTypedDispatch.typed = dispatch;
-            forTypedDispatch.root = function (namespace) {
+            var wrappedDispatch = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return dispatch.apply(this, args);
+            };
+            wrappedDispatch.typed = wrappedDispatch;
+            wrappedDispatch.root = function (namespace) {
                 return {
-                    dispatch: function () {
+                    typed: function () {
                         var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
                         var path = namespace ? namespace + '/' + type : type;
-                        return dispatch(path, payload, { root: true });
+                        return wrappedDispatch(path, payload, { root: true });
                     },
                 };
             };
-            forTypedDispatch.sub = function (namespace) {
+            wrappedDispatch.sub = function (namespace) {
                 return {
-                    dispatch: function () {
+                    typed: function () {
                         var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
                         var path = namespace + '/' + type;
-                        return dispatch(path, payload);
+                        return wrappedDispatch(path, payload);
                     },
                 };
             };
-            return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { commit: forTypedCommit, dispatch: forTypedDispatch }), payload));
+            return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { commit: wrappedCommit, dispatch: wrappedDispatch }), payload));
         };
     });
     return result;
