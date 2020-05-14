@@ -1,11 +1,6 @@
 import { Action } from 'vuex'
 import { SubType } from '../module/types'
-import {
-    ActionPayload,
-    mapTypedActions,
-    ActionFn,
-    AnyActionFn,
-} from '../module'
+import { mapTypedActions, ActionFn, AnyActionFn } from '../module'
 import { useStore } from './store'
 import { NamespaceRef, resolveNamespace } from './types'
 import { computed } from '@vue/composition-api'

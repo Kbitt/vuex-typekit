@@ -36,26 +36,26 @@ const createExampleModule = (sub = false): Module<State, State> =>
             fooAction: ({ commit }) => commit.typed('INC_FOO'),
             barAction: ({ commit }) => {
                 if (sub) {
-                    commit.sub<Mutations>('sub').commit('INC_BAR')
+                    commit.sub<Mutations>('sub').typed('INC_BAR')
                 } else {
-                    commit.root<Mutations>().commit('INC_BAR')
+                    commit.root<Mutations>().typed('INC_BAR')
                 }
             },
             barRootAction: ({ commit }) => {
                 if (!sub) {
-                    commit.root<Mutations>('sub').commit('INC_BAR')
+                    commit.root<Mutations>('sub').typed('INC_BAR')
                 }
             },
             barRootRootAction: ({ dispatch }) => {
                 if (sub) return Promise.resolve()
-                return dispatch.root<Actions>('sub').dispatch('barRootAction')
+                return dispatch.root<Actions>('sub').typed('barRootAction')
             },
             setValue: async ({ commit, dispatch }, payload) => {
                 await dispatch.typed('fooAction')
                 if (sub) {
-                    await dispatch.sub<Actions>('sub').dispatch('fooAction')
+                    await dispatch.sub<Actions>('sub').typed('fooAction')
                 } else {
-                    await dispatch.root<Actions>().dispatch('fooAction')
+                    await dispatch.root<Actions>().typed('fooAction')
                 }
                 commit.typed('SET_VALUE', payload)
             },

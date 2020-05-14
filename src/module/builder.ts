@@ -26,7 +26,7 @@ export interface TypedCommit<Mutations> extends Commit {
     root<M>(
         namespace?: string
     ): {
-        commit: {
+        typed: {
             <K extends keyof SubType<M, Mutation<any>>>(
                 ...params: Parameters<M[K]>[1] extends void
                     ? [K]
@@ -37,7 +37,7 @@ export interface TypedCommit<Mutations> extends Commit {
     sub<M>(
         namespace: string
     ): {
-        commit: {
+        typed: {
             <K extends keyof SubType<M, Mutation<any>>>(
                 ...params: Parameters<M[K]>[1] extends void
                     ? [K]
@@ -58,7 +58,7 @@ export interface TypedDispatch<Actions> extends Dispatch {
     root<A>(
         namespace?: string
     ): {
-        dispatch: {
+        typed: {
             <K extends keyof SubType<A, Action<any, any>>>(
                 ...params: Parameters<A[K]>[1] extends void
                     ? [K]
@@ -75,7 +75,7 @@ export interface TypedDispatch<Actions> extends Dispatch {
     sub<A>(
         namespace: string
     ): {
-        dispatch: {
+        typed: {
             <K extends keyof SubType<A, Action<any, any>>>(
                 ...params: Parameters<A[K]>[1] extends void
                     ? [K]
@@ -284,7 +284,7 @@ export function createActions<
             forTypedCommit.typed = commit
             forTypedCommit.root = function (namespace) {
                 return {
-                    commit: function () {
+                    typed: function () {
                         const [type, payload] = arguments
                         const path = namespace ? namespace + '/' + type : type
                         commit(path, payload, {
@@ -296,7 +296,7 @@ export function createActions<
 
             forTypedCommit.sub = function (namespace) {
                 return {
-                    commit: function () {
+                    typed: function () {
                         const [type, payload] = arguments
                         const path = namespace + '/' + type
                         commit(path, payload, {
@@ -310,7 +310,7 @@ export function createActions<
             forTypedDispatch.typed = dispatch
             forTypedDispatch.root = function (namespace) {
                 return {
-                    dispatch: function () {
+                    typed: function () {
                         const [type, payload] = arguments
                         const path = namespace ? namespace + '/' + type : type
                         return dispatch(path, payload, { root: true })
@@ -319,7 +319,7 @@ export function createActions<
             }
             forTypedDispatch.sub = function (namespace) {
                 return {
-                    dispatch: function () {
+                    typed: function () {
                         const [type, payload] = arguments
                         const path = namespace + '/' + type
                         return dispatch(path, payload)
