@@ -18,9 +18,6 @@ jobs:
                       - run: yarn build
                       - run: yarn test
     deploy:
-        branches:
-            only:
-                - deploy
         <<: *defaults
         steps:
             - attach_workspace:
@@ -35,3 +32,11 @@ workflows:
     build-and-test:
         jobs:
             - build-and-test
+    deploy:
+        jobs:
+            - build-and-test
+            - deploy
+                filters:
+                    branches:
+                        only:
+                            deploy
