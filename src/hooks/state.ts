@@ -9,6 +9,18 @@ export type StateRefMapper<S> = {
     ) => {
         [P in K]: Readonly<Ref<Readonly<S[P]>>>
     }
+
+    map: <K extends keyof S>(
+        ...keys: K[]
+    ) => {
+        to: <U>(
+            mapper: (
+                mapped: {
+                    [P in K]: Readonly<Ref<Readonly<S[P]>>>
+                }
+            ) => U
+        ) => U
+    }
 }
 
 export function useState<S>(namespace?: NamespaceRef): StateRefMapper<S> {
@@ -25,6 +37,12 @@ export function useState<S>(namespace?: NamespaceRef): StateRefMapper<S> {
                 result[key] = computed(() => mapped.value[key].call({ $store }))
             })
             return result
+        },
+        map(...keys) {
+            const mapped = this.with(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
         },
     }
 }

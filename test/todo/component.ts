@@ -19,6 +19,7 @@ export const template = `
     <button type="button" id="clear" @click="clearDone">Clear Done</button>
     <div><span>Done: {{ doneCount }} </span><span>Not done: {{ notDoneCount }}</span></div>
     <div><span>Done: {{ subDoneCount }} </span><span>Not done: {{ subNotDoneCount }}</span></div>
+    <div><input readonly id="count" :value="mappedTodos.length" ></div>
     <ul id="list">
         <li v-for="(todo, index) in todos" :key="filter + index">
             <input
@@ -46,6 +47,9 @@ const createTodoComponent = (
             template,
             computed: {
                 ...mapTypedState<TodoState>(namespace).to('todos', 'filter'),
+                ...mapTypedState<TodoState>(namespace)
+                    .map('todos')
+                    .to(state => ({ mappedTodos: state.todos })),
                 ...mapTypedGetters<TodoGetters>(namespace).to(
                     'doneCount',
                     'notDoneCount',
@@ -79,6 +83,9 @@ const createTodoComponent = (
         template,
         computed: {
             todos(this: Vue) {
+                return this.$state<TodoState>(namespace).get('todos')
+            },
+            mappedTodos(this: Vue) {
                 return this.$state<TodoState>(namespace).get('todos')
             },
             filter(this: Vue) {

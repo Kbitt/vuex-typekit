@@ -15,6 +15,9 @@ export function createHookTodoComponent(namespace?: string) {
         setup: () => {
             return {
                 ...useState<TodoState>(namespace).with('filter', 'todos'),
+                ...useState<TodoState>(namespace)
+                    .map('todos')
+                    .to(state => ({ mappedTodos: state.todos })),
                 ...useGetters<TodoGetters>(namespace).with(
                     'doneCount',
                     'filtered',
