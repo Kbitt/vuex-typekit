@@ -55,7 +55,7 @@ workflows:
                   requires:
                       - build-and-test
                   filters:
-                      branches:
-                          only: deploy
                       tags:
                           only: /^v.*/
+                      branches:
+                          ignore: /.*/
