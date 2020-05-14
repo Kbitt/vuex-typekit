@@ -27,7 +27,7 @@ jobs:
                   command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
             - run:
                   name: Publish package
-                  command: yarn publish --new-version $(cat package.json | ".version")
+                  command: yarn publish --non-interactive
 workflows:
     build-test-deploy:
         jobs:
