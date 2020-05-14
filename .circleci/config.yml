@@ -1,4 +1,8 @@
 version: 2.1
+defaults: &defaults
+    working_directory: ~/repo
+    docker:
+        - image: circleci/node:lts
 orbs:
     node: circleci/node@1.1.6
     jq: circleci/jq@2.0.2
@@ -20,13 +24,13 @@ jobs:
         <<: *defaults
         steps:
             - attach_workspace:
-                at: ~/repo
+                  at: ~/repo
             - run:
-                name: Authenticate with registry
-                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+                  name: Authenticate with registry
+                  command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
             - run:
-                name: Publish package
-                command: yarn publish --new-version $(cat package.json | ".version")
+                  name: Publish package
+                  command: yarn publish --new-version $(cat package.json | ".version")
 workflows:
     build-and-test:
         jobs:
