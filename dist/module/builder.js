@@ -21,6 +21,22 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 function createModule(_a) {
     var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters, namespaced = _a.namespaced, modules = _a.modules;
@@ -48,8 +64,48 @@ function createActions(options) {
             var commit = _a.commit, dispatch = _a.dispatch, context = __rest(_a, ["commit", "dispatch"]);
             var forTypedCommit = commit;
             forTypedCommit.typed = commit;
+            forTypedCommit.root = function (namespace) {
+                return {
+                    commit: function () {
+                        var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
+                        var path = namespace ? namespace + '/' + type : type;
+                        commit(path, payload, {
+                            root: true,
+                        });
+                    },
+                };
+            };
+            forTypedCommit.sub = function (namespace) {
+                return {
+                    commit: function () {
+                        var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
+                        var path = namespace + '/' + type;
+                        commit(path, payload, {
+                            root: true,
+                        });
+                    },
+                };
+            };
             var forTypedDispatch = dispatch;
             forTypedDispatch.typed = dispatch;
+            forTypedDispatch.root = function (namespace) {
+                return {
+                    dispatch: function () {
+                        var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
+                        var path = namespace ? namespace + '/' + type : type;
+                        return dispatch(path, payload, { root: true });
+                    },
+                };
+            };
+            forTypedDispatch.sub = function (namespace) {
+                return {
+                    dispatch: function () {
+                        var _a = __read(arguments, 2), type = _a[0], payload = _a[1];
+                        var path = namespace + '/' + type;
+                        return dispatch(path, payload);
+                    },
+                };
+            };
             return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { commit: forTypedCommit, dispatch: forTypedDispatch }), payload));
         };
     });

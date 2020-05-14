@@ -1,16 +1,42 @@
-import { ActionContext, Mutation, Action, Getter, ActionHandler, Commit, Dispatch, GetterTree, ActionTree, MutationTree, CommitOptions } from 'vuex';
+import { ActionContext, Mutation, Action, Getter, ActionHandler, Commit, Dispatch, GetterTree, ActionTree, MutationTree } from 'vuex';
 import { SubType } from './types';
 import { ActionPayload } from './action';
 import { TypedGetters } from './getter';
 import { MutationType } from './mutation';
 export interface TypedCommit<Mutations> extends Commit {
     typed: {
-        <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] | [K, CommitOptions] : [K, Parameters<Mutations[K]>[1]] | [K, Parameters<Mutations[K]>[1], CommitOptions]): void;
+        <K extends keyof SubType<Mutations, Mutation<any>>>(...params: Parameters<Mutations[K]>[1] extends void ? [K] : [K, Parameters<Mutations[K]>[1]]): void;
+    };
+    root<M>(namespace?: string): {
+        commit: {
+            <K extends keyof SubType<M, Mutation<any>>>(...params: Parameters<M[K]>[1] extends void ? [K] : [K, Parameters<M[K]>[1]]): void;
+        };
+    };
+    sub<M>(namespace: string): {
+        commit: {
+            <K extends keyof SubType<M, Mutation<any>>>(...params: Parameters<M[K]>[1] extends void ? [K] : [K, Parameters<M[K]>[1]]): void;
+        };
     };
 }
 export interface TypedDispatch<Actions> extends Dispatch {
     typed: {
         <K extends keyof SubType<Actions, Action<any, any>>>(...params: Parameters<Actions[K]>[1] extends void ? [K] : [K, Parameters<Actions[K]>[1]]): Promise<any> | void;
+    };
+    root<A>(namespace?: string): {
+        dispatch: {
+            <K extends keyof SubType<A, Action<any, any>>>(...params: Parameters<A[K]>[1] extends void ? [K] : [K, Parameters<A[K]>[1]]): Promise<any> | void;
+        };
+    };
+    /**
+     * Provide a dispatcher object to call actions on a sub module. Use like:
+     * @example
+     * dispatch.sub<ActionInterface>('subNamespace').dispatch('someSubAction')
+     * @param namespace Namespace of the submodule to call
+     */
+    sub<A>(namespace: string): {
+        dispatch: {
+            <K extends keyof SubType<A, Action<any, any>>>(...params: Parameters<A[K]>[1] extends void ? [K] : [K, Parameters<A[K]>[1]]): Promise<any> | void;
+        };
     };
 }
 export interface TypedActionContext<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> extends ActionContext<State, RootState> {
