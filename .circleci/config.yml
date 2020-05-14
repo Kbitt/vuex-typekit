@@ -45,12 +45,18 @@ jobs:
                   name: Publish package
                   command: yarn publish --non-interactive
 workflows:
-    build-test-deploy:
+    rolling-build:
         jobs:
             - build-and-test:
                   filters:
                       branches:
-                          only: /^(master|deploy)$/
+                          only: master
+    build-test-deploy:
+        jobs:
+            - build-and-test:
+                  filters:
+                      tags:
+                          only: /^v.*/
             - deploy:
                   requires:
                       - build-and-test
