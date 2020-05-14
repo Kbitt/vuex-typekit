@@ -48,6 +48,8 @@ workflows:
         jobs:
             - build-and-test
             - deploy:
+                  requires:
+                      - build-and-test
                   filters:
                       branches:
                           only: deploy
