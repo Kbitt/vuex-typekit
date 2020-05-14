@@ -3,6 +3,7 @@ import {
     TodoState,
     TodoMutations,
     TodoActions,
+    TodoGetters,
 } from '../todo/todo'
 import {
     MutationType,
@@ -40,10 +41,14 @@ export const createExtendedTodoModule = () => {
         actions: createActions<
             ExtendedTodoState,
             ExtendedTodoMutations,
-            ExtendedTodoActions
+            ExtendedTodoActions,
+            TodoGetters
         >({
             ...actions,
-            save: ({}, { isDirty }) => Promise.resolve(),
+            save: ({ commit, dispatch, getters }, { isDirty }) => {
+                commit.typed('REMOVE_TODO', { index: 0 })
+                dispatch.typed('clearDone')
+            },
             clearDone: () => Promise.resolve(),
         }),
     }

@@ -17,4 +17,5 @@ module.exports = {
             babelConfig: true,
         },
     },
+    collectCoverageFrom: ['src/**/*.ts'],
 }

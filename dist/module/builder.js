@@ -23,9 +23,11 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 function createModule(_a) {
-    var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters, modules = _a.modules;
+    var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters, namespaced = _a.namespaced, modules = _a.modules;
     return {
         state: state,
+        namespaced: namespaced,
+        modules: modules,
         mutations: mutations
             ? createMutations(mutations)
             : {},
@@ -45,9 +47,9 @@ function createActions(options) {
         result[k] = function (_a, payload) {
             var commit = _a.commit, dispatch = _a.dispatch, context = __rest(_a, ["commit", "dispatch"]);
             var forTypedCommit = commit;
-            forTypedCommit.any = commit;
+            forTypedCommit.typed = commit;
             var forTypedDispatch = dispatch;
-            forTypedDispatch.any = dispatch;
+            forTypedDispatch.typed = dispatch;
             return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { commit: forTypedCommit, dispatch: forTypedDispatch }), payload));
         };
     });

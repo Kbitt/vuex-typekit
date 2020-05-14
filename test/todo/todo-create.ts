@@ -1,5 +1,16 @@
-import { createModule } from '../../src'
+import { createModule, GetterType } from '../../src'
 import { TodoState, TodoMutations, TodoActions, TodoGetters } from './todo'
+
+interface SubState {}
+
+interface SubMutations {}
+
+interface SubActions {}
+
+interface SubGetters {
+    subDoneCount: GetterType<number, SubState>
+    subNotDoneCount: GetterType<number, SubState>
+}
 
 export const createTodoModule = () =>
     createModule<TodoState, TodoMutations, TodoActions, TodoGetters>({
@@ -11,7 +22,7 @@ export const createTodoModule = () =>
             },
         }),
         mutations: {
-            ADD_TODO: (state) => state.todos.push({ done: false, text: '' }),
+            ADD_TODO: state => state.todos.push({ done: false, text: '' }),
             REMOVE_TODO: (state, { index }) => state.todos.splice(index, 1),
             SET_DONE: (state, { index, done }) => {
                 state.todos[index].done = done
@@ -23,18 +34,17 @@ export const createTodoModule = () =>
             SET_FILTER_TEXT: (state, { text }) => (state.filter.text = text),
         },
         getters: {
-            filtered: (state) =>
+            filtered: state =>
                 state.todos.filter(
-                    (todo) =>
+                    todo =>
                         (state.filter.done === undefined ||
                             state.filter.done === todo.done) &&
                         (state.filter.text === undefined ||
                             todo.text.includes(state.filter.text))
                 ),
-            doneCount: (state) =>
-                state.todos.filter((todo) => todo.done).length,
-            notDoneCount: (state) =>
-                state.todos.filter((todo) => !todo.done).length,
+            doneCount: state => state.todos.filter(todo => todo.done).length,
+            notDoneCount: (state, getters) =>
+                state.todos.length - getters.doneCount,
         },
         actions: {
             clearDone: ({ state, commit }) => {
@@ -44,22 +54,43 @@ export const createTodoModule = () =>
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach((index) => commit('REMOVE_TODO', { index }))
+                    .forEach(index => commit.typed('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]
                 const idx = state.todos.indexOf(todo)
-                commit('REMOVE_TODO', { index: idx })
+                commit.typed('REMOVE_TODO', { index: idx })
             },
             setDone: ({ state, commit, getters }, { index, done }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_DONE', { index: realIndex, done })
+                commit.typed('SET_DONE', { index: realIndex, done })
             },
             setText: ({ state, commit, getters }, { index, text }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_TEXT', { index: realIndex, text })
+                commit.typed('SET_TEXT', { index: realIndex, text })
             },
+        },
+        modules: {
+            sub: createModule<
+                SubState,
+                SubMutations,
+                SubActions,
+                SubGetters,
+                TodoState,
+                TodoGetters
+            >({
+                namespaced: true,
+                state: () => ({}),
+                mutations: {},
+                actions: {},
+                getters: {
+                    subDoneCount: (_s, _g, _r, rootGetters) =>
+                        rootGetters.doneCount,
+                    subNotDoneCount: (_s, _g, _r, rootGetters) =>
+                        rootGetters.notDoneCount,
+                },
+            }),
         },
     })

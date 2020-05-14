@@ -9,7 +9,6 @@ import {
     GetterTree,
     ActionTree,
     MutationTree,
-    CommitOptions,
 } from 'vuex'
 import { SubType } from './types'
 import { ActionPayload } from './action'
@@ -17,23 +16,73 @@ import { TypedGetters } from './getter'
 import { MutationType } from './mutation'
 
 export interface TypedCommit<Mutations> extends Commit {
-    <K extends keyof SubType<Mutations, Mutation<any>>>(
-        ...params: Parameters<Mutations[K]>[1] extends void
-            ? [K] | [K, CommitOptions]
-            :
-                  | [K, Parameters<Mutations[K]>[1]]
-                  | [K, Parameters<Mutations[K]>[1], CommitOptions]
-    ): void
-    any: Commit
+    typed: {
+        <K extends keyof SubType<Mutations, Mutation<any>>>(
+            ...params: Parameters<Mutations[K]>[1] extends void
+                ? [K]
+                : [K, Parameters<Mutations[K]>[1]]
+        ): void
+    }
+    root<M>(
+        namespace?: string
+    ): {
+        commit: {
+            <K extends keyof SubType<M, Mutation<any>>>(
+                ...params: Parameters<M[K]>[1] extends void
+                    ? [K]
+                    : [K, Parameters<M[K]>[1]]
+            ): void
+        }
+    }
+    sub<M>(
+        namespace: string
+    ): {
+        commit: {
+            <K extends keyof SubType<M, Mutation<any>>>(
+                ...params: Parameters<M[K]>[1] extends void
+                    ? [K]
+                    : [K, Parameters<M[K]>[1]]
+            ): void
+        }
+    }
 }
 
 export interface TypedDispatch<Actions> extends Dispatch {
-    <K extends keyof SubType<Actions, Action<any, any>>>(
-        ...params: Parameters<Actions[K]>[1] extends void
-            ? [K]
-            : [K, Parameters<Actions[K]>[1]]
-    ): Promise<any> | void
-    any: Dispatch
+    typed: {
+        <K extends keyof SubType<Actions, Action<any, any>>>(
+            ...params: Parameters<Actions[K]>[1] extends void
+                ? [K]
+                : [K, Parameters<Actions[K]>[1]]
+        ): Promise<any> | void
+    }
+    root<A>(
+        namespace?: string
+    ): {
+        dispatch: {
+            <K extends keyof SubType<A, Action<any, any>>>(
+                ...params: Parameters<A[K]>[1] extends void
+                    ? [K]
+                    : [K, Parameters<A[K]>[1]]
+            ): Promise<any> | void
+        }
+    }
+    /**
+     * Provide a dispatcher object to call actions on a sub module. Use like:
+     * @example
+     * dispatch.sub<ActionInterface>('subNamespace').dispatch('someSubAction')
+     * @param namespace Namespace of the submodule to call
+     */
+    sub<A>(
+        namespace: string
+    ): {
+        dispatch: {
+            <K extends keyof SubType<A, Action<any, any>>>(
+                ...params: Parameters<A[K]>[1] extends void
+                    ? [K]
+                    : [K, Parameters<A[K]>[1]]
+            ): Promise<any> | void
+        }
+    }
 }
 export interface TypedActionContext<
     State,
@@ -90,6 +139,7 @@ export type CreateModuleOptions<
     RootState = void,
     RootGetters = void
 > = {
+    namespaced?: boolean
     state: State | (() => State)
     modules?: Record<string, any>
 } & (Mutations extends void
@@ -132,6 +182,7 @@ export function createModule<
     mutations,
     actions,
     getters,
+    namespaced,
     modules,
 }: CreateModuleOptions<
     State,
@@ -161,6 +212,8 @@ export function createModule<
           }) {
     return {
         state,
+        namespaced,
+        modules,
         mutations: mutations
             ? createMutations<State, Mutations>(mutations as any)
             : {},
@@ -227,11 +280,52 @@ export function createActions<
             { commit, dispatch, ...context }: ActionContext<State, any>,
             payload?: any
         ) {
-            const forTypedCommit: any = commit
-            forTypedCommit.any = commit
+            const forTypedCommit = commit as TypedCommit<Mutations>
+            forTypedCommit.typed = commit
+            forTypedCommit.root = function (namespace) {
+                return {
+                    commit: function () {
+                        const [type, payload] = arguments
+                        const path = namespace ? namespace + '/' + type : type
+                        commit(path, payload, {
+                            root: true,
+                        })
+                    },
+                }
+            }
 
-            const forTypedDispatch: any = dispatch
-            forTypedDispatch.any = dispatch
+            forTypedCommit.sub = function (namespace) {
+                return {
+                    commit: function () {
+                        const [type, payload] = arguments
+                        const path = namespace + '/' + type
+                        commit(path, payload, {
+                            root: true,
+                        })
+                    },
+                }
+            }
+
+            const forTypedDispatch = dispatch as TypedDispatch<Actions>
+            forTypedDispatch.typed = dispatch
+            forTypedDispatch.root = function (namespace) {
+                return {
+                    dispatch: function () {
+                        const [type, payload] = arguments
+                        const path = namespace ? namespace + '/' + type : type
+                        return dispatch(path, payload, { root: true })
+                    },
+                }
+            }
+            forTypedDispatch.sub = function (namespace) {
+                return {
+                    dispatch: function () {
+                        const [type, payload] = arguments
+                        const path = namespace + '/' + type
+                        return dispatch(path, payload)
+                    },
+                }
+            }
             return Promise.resolve(
                 (options[k] as any).call(
                     this,

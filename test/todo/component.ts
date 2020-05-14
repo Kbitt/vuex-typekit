@@ -1,5 +1,11 @@
 import Vue from 'vue'
-import { TodoState, TodoMutations, TodoActions, TodoGetters } from './todo'
+import {
+    TodoState,
+    TodoMutations,
+    TodoActions,
+    TodoGetters,
+    SubGetters,
+} from './todo'
 import {
     mapTypedState,
     mapTypedMutations,
@@ -10,6 +16,8 @@ export const template = `
 <div>
     <button type="button" id="add" @click="ADD_TODO">Add</button>
     <button type="button" id="clear" @click="clearDone">Clear Done</button>
+    <div><span>Done: {{ doneCount }} </span><span>Not done: {{ notDoneCount }}</span></div>
+    <div><span>Done: {{ subDoneCount }} </span><span>Not done: {{ subNotDoneCount }}</span></div>
     <ul id="list">
         <li v-for="(todo, index) in todos" :key="filter + index">
             <input
@@ -42,6 +50,9 @@ const createTodoComponent = (
                     'notDoneCount',
                     'filtered'
                 ),
+                ...mapTypedGetters<SubGetters>(
+                    namespace ? namespace + '/sub' : 'sub'
+                ).to('subDoneCount', 'subNotDoneCount'),
             },
             methods: {
                 ...mapTypedMutations<TodoMutations>(namespace).to(
@@ -72,8 +83,14 @@ const createTodoComponent = (
             doneCount(this: Vue) {
                 return this.$getters<TodoGetters>().get('doneCount')
             },
+            subDoneCount(this: Vue) {
+                return this.$getters<SubGetters>('sub').get('subDoneCount')
+            },
             notDoneCount(this: Vue) {
                 return this.$getters<TodoGetters>().get('notDoneCount')
+            },
+            subNotDoneCount(this: Vue) {
+                return this.$getters<SubGetters>('sub').get('subNotDoneCount')
             },
         },
         methods: {

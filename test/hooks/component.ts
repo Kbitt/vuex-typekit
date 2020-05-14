@@ -5,6 +5,7 @@ import {
     TodoActions,
     TodoMutations,
     TodoGetters,
+    SubGetters,
 } from '../todo/todo'
 import { useActions, useGetters, useState, useMutations } from '../../src'
 
@@ -19,6 +20,9 @@ export function createHookTodoComponent(namespace?: string) {
                     'filtered',
                     'notDoneCount'
                 ),
+                ...useGetters<SubGetters>(
+                    namespace ? namespace + '/sub' : 'sub'
+                ).with('subDoneCount', 'subNotDoneCount'),
                 ...useMutations<TodoMutations>(namespace).with(
                     'ADD_TODO',
                     'REMOVE_TODO'

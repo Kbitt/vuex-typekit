@@ -4,7 +4,7 @@
 
 ## The Problem
 
-Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write Vuex modules with useful type information that extends from the module's definition to its consumption.
+Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write types for our modules that help with both writing the modules and using them.
 
 ## TLDR: Why?
 
@@ -13,22 +13,35 @@ Wouldn't it be great if we could use vuex and get the benefits of static typing?
 Let's say we have a mutation defined like
 
 ```typescript
-SET_VALUE: (state, { value: string }) => (state.value = value)
+SET_VALUE: (state: { value: string }, payload: { value: string }) =>
+    (state.value = payload.value)
 ```
 
-In our actions it would really be beneficial to see something like this in our editor:
+When using our vuex modules it would really be beneficial to be able to catch some errors early:
 
 If we forget to pass a payload:
 
-![Missing payload image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/missing_payload.png)
+```typescript
+valueAction: ({ commit }, payload: { value: string }) => {
+    commit('SET_VALUE') // no payload!
+}
+```
 
 If we pass the incorrect type of payload:
 
-![Incorrect payload image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/incorrect_payload.png)
+```typescript
+valueAction: ({ commit }, payload: { value: string }) => {
+    commit('SET_VALUE', payload.value) // incorrect payload!
+}
+```
 
 Or even if we try to call a mutation (or action) that doesn't exist:
 
-![Incorrect mutation image](https://raw.githubusercontent.com/Kbitt/vuex-typekit/master/screenshots/incorrect_mutation.png)
+```typescript
+valueAction: ({ commit }, payload: { value: string }) => {
+    commit('SETVALUE', payload.value) // wrong mutation type!
+}
+```
 
 We can't normally catch these kinds of errors at build time, but `vuex-typekit` makes this possible!
 
@@ -110,8 +123,8 @@ export default new Store<TodoState>(
                             todo.text.includes(state.filter.text))
                 ),
             doneCount: state => state.todos.filter(todo => todo.done).length,
-            notDoneCount: state =>
-                state.todos.filter(todo => !todo.done).length,
+            notDoneCount: (state, getters) =>
+                state.todos.length - getters.doneCount,
         },
         actions: {
             clearDone: ({ state, commit }) => {
@@ -121,29 +134,29 @@ export default new Store<TodoState>(
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach(index => commit('REMOVE_TODO', { index }))
+                    .forEach(index => commit.typed('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]
                 const idx = state.todos.indexOf(todo)
-                commit('REMOVE_TODO', { index: idx })
+                commit.typed('REMOVE_TODO', { index: idx })
             },
             setDone: ({ state, commit, getters }, { index, done }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_DONE', { index: realIndex, done })
+                commit.typed('SET_DONE', { index: realIndex, done })
             },
             setText: ({ state, commit, getters }, { index, text }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_TEXT', { index: realIndex, text })
+                commit.typed('SET_TEXT', { index: realIndex, text })
             },
         },
     })
 )
 ```
 
-`createModule` takes all of our interfaces and requires typed implementations. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, `commit`, `dispatch` and `getters` are all typed, so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). If you want to use the untyped `commit` and `dispatch`, you can still call `commit.any` and `dispatch.any`, respectively. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
+`createModule` takes all of our interfaces and requires typed implementations. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, we have typed versions of `commit` and `dispatch` accessible via `commit.typed` and `dispatch.typed`, and `getters`/`rootGetters` are fully typed (if interfaces for those are provided), so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). Calling `commit` and `dispatch` still works like normal untyped calls. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
 
 ## Hooks for composition-api
 

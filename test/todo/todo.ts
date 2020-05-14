@@ -6,7 +6,6 @@ import {
     ActionType,
     createActions,
 } from '../../src'
-import { Module } from 'vuex'
 
 export type Todo = {
     done: boolean
@@ -41,6 +40,17 @@ export interface TodoActions {
     removeTodo: ActionType<TodoState, { index: number }>
     setDone: ActionType<TodoState, { index: number; done: boolean }>
     setText: ActionType<TodoState, { index: number; text: string }>
+}
+
+export interface SubState {}
+
+export interface SubMutations {}
+
+export interface SubActions {}
+
+export interface SubGetters {
+    subDoneCount: GetterType<number, SubState>
+    subNotDoneCount: GetterType<number, SubState>
 }
 
 export const createTodoModule = () => ({
@@ -89,23 +99,40 @@ export const createTodoModule = () => ({
                     .map(({ index }) => index)
                     .sort()
                     .reverse()
-                    .forEach(index => commit('REMOVE_TODO', { index }))
+                    .forEach(index => commit.typed('REMOVE_TODO', { index }))
             },
             removeTodo: ({ state, getters, commit }, { index }) => {
                 const todo = getters.filtered[index]
                 const idx = state.todos.indexOf(todo)
-                commit('REMOVE_TODO', { index: idx })
+                commit.typed('REMOVE_TODO', { index: idx })
             },
             setDone: ({ state, commit, getters }, { index, done }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_DONE', { index: realIndex, done })
+                commit.typed('SET_DONE', { index: realIndex, done })
             },
             setText: ({ state, commit, getters }, { index, text }) => {
                 const todo = getters.filtered[index]
                 const realIndex = state.todos.indexOf(todo)
-                commit('SET_TEXT', { index: realIndex, text })
+                commit.typed('SET_TEXT', { index: realIndex, text })
             },
         }),
+    },
+    modules: {
+        sub: {
+            namespaced: true,
+            state: () => ({}),
+            getters: createGetters<
+                SubState,
+                SubGetters,
+                TodoState,
+                TodoGetters
+            >({
+                subDoneCount: (_, __, ___, rootGetters) =>
+                    rootGetters.doneCount,
+                subNotDoneCount: (_, __, ___, rootGetters) =>
+                    rootGetters.notDoneCount,
+            }),
+        },
     },
 })
