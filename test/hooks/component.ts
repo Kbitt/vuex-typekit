@@ -27,6 +27,12 @@ export function createHookTodoComponent(namespace?: string) {
                     'ADD_TODO',
                     'REMOVE_TODO'
                 ),
+                ...useMutations<TodoMutations>(namespace)
+                    .map('ADD_TODO', 'REMOVE_TODO')
+                    .to(({ ADD_TODO, REMOVE_TODO }) => ({
+                        addTodo: ADD_TODO,
+                        removeTodo: REMOVE_TODO,
+                    })),
                 ...useActions<TodoActions>(namespace).with(
                     'setDone',
                     'setText',

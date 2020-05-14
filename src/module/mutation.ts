@@ -3,6 +3,9 @@ import { SubType, VueForMappers, UnbindVue } from './types'
 
 export type AnyMutationFn = (payload?: any) => void
 
+/**
+ * Declares a mutation. Requires the module State type (S) and an optional Payload type (P)
+ */
 export type MutationType<S, P = void> = P extends void
     ? (state: S) => void
     : (state: S, payload: P) => void
@@ -32,12 +35,26 @@ export type VueMapMutationsSelector<T> = {
     to: <K extends keyof SubType<T, Mutation<any>>>(
         ...keys: K[]
     ) => { [P in K]: MappedMutations<T>[P] }
+
+    map: <K extends keyof SubType<T, Mutation<any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(mapper: (mapped: { [P in K]: MappedMutations<T>[P] }) => U) => U
+    }
 }
 
 export type MapMutationsSelector<T> = {
     to: <K extends keyof SubType<T, Mutation<any>>>(
         ...keys: K[]
     ) => UnbindVue<Pick<MappedMutations<T>, K>>
+
+    map: <K extends keyof SubType<T, Mutation<any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(
+            mapper: (mapped: UnbindVue<Pick<MappedMutations<T>, K>>) => U
+        ) => U
+    }
 }
 
 export function mapTypedMutations<T>(
@@ -48,6 +65,12 @@ export function mapTypedMutations<T>(
             (typeof namespace === 'string'
                 ? mapMutations(namespace, keys as string[])
                 : mapMutations(keys as string[])) as MappedMutations<T>,
+        map(...keys) {
+            const mapped = this.to(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
+        },
     }
 }
 

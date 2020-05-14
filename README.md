@@ -94,7 +94,7 @@ export interface TodoActions {
 
 The `MutationType` and `ActionType` types let you declare your mutations and actions based on state as well as the type of the payload. `GetterType` types a getter to its return type and state, and optionally the types of getters, root state and root getters.
 
-Now we can implement the module:
+Now we can implement the module with `createModule` helper function:
 
 ```typescript
 export default new Store<TodoState>(
@@ -161,7 +161,7 @@ export default new Store<TodoState>(
 )
 ```
 
-`createModule` takes all of our interfaces and requires typed implementations. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, we have typed versions of `commit` and `dispatch` accessible via `commit.typed` and `dispatch.typed`, and `getters`/`rootGetters` are fully typed (if interfaces for those are provided), so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). Calling `commit` and `dispatch` still works like normal untyped calls. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
+`createModule` takes all of our interfaces and requires implementations for each mutation/action/getter. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, we have typed versions of `commit` and `dispatch` accessible via `commit.typed` and `dispatch.typed`, and `getters`/`rootGetters` are fully typed (if interfaces for those are provided), so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). Typed access to the store root or to submodules are accessible via `(commit|dispatch).root<T>(namespace?: string).typed` and `(commit|dispatch).sub<T>(namespace: string).typed` Calling `commit` and `dispatch` still works like normal untyped calls. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
 
 ## Hooks for composition-api
 

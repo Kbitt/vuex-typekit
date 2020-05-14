@@ -15,6 +15,7 @@ import {
 export const template = `
 <div>
     <button type="button" id="add" @click="ADD_TODO">Add</button>
+    <button type="button" id="mappedAdd" @click="addTodo">Add</button>
     <button type="button" id="clear" @click="clearDone">Clear Done</button>
     <div><span>Done: {{ doneCount }} </span><span>Not done: {{ notDoneCount }}</span></div>
     <div><span>Done: {{ subDoneCount }} </span><span>Not done: {{ subNotDoneCount }}</span></div>
@@ -59,6 +60,12 @@ const createTodoComponent = (
                     'ADD_TODO',
                     'REMOVE_TODO'
                 ),
+                ...mapTypedMutations<TodoMutations>(namespace)
+                    .map('ADD_TODO', 'REMOVE_TODO')
+                    .to(({ ADD_TODO, REMOVE_TODO }) => ({
+                        addTodo: ADD_TODO,
+                        removeTodo: REMOVE_TODO,
+                    })),
                 ...mapTypedActions<TodoActions>(namespace).to(
                     'setDone',
                     'setText',
@@ -98,6 +105,15 @@ const createTodoComponent = (
                 this.$mutations<TodoMutations>(namespace).commit('ADD_TODO')
             },
             REMOVE_TODO(this: Vue, payload: { index: number }) {
+                this.$mutations<TodoMutations>(namespace).commit(
+                    'REMOVE_TODO',
+                    payload
+                )
+            },
+            addTodo(this: Vue) {
+                this.$mutations<TodoMutations>(namespace).commit('ADD_TODO')
+            },
+            removeTodo(this: Vue, payload: { index: number }) {
                 this.$mutations<TodoMutations>(namespace).commit(
                     'REMOVE_TODO',
                     payload
