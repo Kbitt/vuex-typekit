@@ -32,7 +32,7 @@ workflows:
     build-test-deploy:
         jobs:
             - build-and-test
-            - deploy
-                filters:
-                    branches:
-                        only: deploy
+            - deploy:
+                  filters:
+                      branches:
+                          only: deploy
