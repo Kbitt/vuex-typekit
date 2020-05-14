@@ -8,6 +8,7 @@ orbs:
     # jq: circleci/jq@2.0.2
 jobs:
     build-and-test:
+        <<: *defaults
         executor:
             name: node/default
         steps:
