@@ -299,9 +299,7 @@ export function createActions<
                     typed: function () {
                         const [type, payload] = arguments
                         const path = namespace + '/' + type
-                        commit(path, payload, {
-                            root: true,
-                        })
+                        commit(path, payload)
                     },
                 }
             }
