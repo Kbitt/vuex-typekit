@@ -48,7 +48,7 @@ valueAction: ({ commit }, payload: { value: string }) => {
 }
 ```
 
-We can't normally catch these kinds of errors at build time, but `vuex-typekit` makes this possible!
+This applies to both to the internal usage of our models, and the external usage in our components. We can't normally catch these kinds of errors at build time, but `vuex-typekit` makes this possible!
 
 ## How To
 
@@ -161,7 +161,15 @@ export default new Store<TodoState>(
 )
 ```
 
-`createModule` takes all of our interfaces and requires implementations for each mutation/action/getter. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again. In the actions, we have typed versions of `commit` and `dispatch` accessible via `commit.typed` and `dispatch.typed`, and `getters`/`rootGetters` are fully typed (if interfaces for those are provided), so they only accept valid mutation/action type names for the local module, and only accept the correct type of payload (or no payload). Typed access to the store root or to submodules are accessible via `(commit|dispatch).root<T>(namespace?: string).typed` and `(commit|dispatch).sub<T>(namespace: string).typed` Calling `commit` and `dispatch` still works like normal untyped calls. You can also create separate mutation trees, action trees, etc., with the matching `createMutations`, `createActions`, etc., functions, allowing you to create them separately from your module.
+`createModule` takes all of our interfaces and requires implementations for each mutation/action/getter. The payloads of mutations and actions are all inferred from the interfaces, so they do not need to be explicitly declared again.
+
+## Implicitly Typed Mutations and Actions
+
+A couple things to note here: for all of our mutations and actions, we don't need to manually annotate the types of our payloads (unless we really want to). They're already defined in our interfaces and carried over.
+
+## The Typed Action Context
+
+We have a special `ActionContext` in our actions when we use `createModule` (or `createActions`). We can call `commit` and `dispatch` like normal, but we now have access special typed versions via `commit.typed` and `dispatch.typed`. The syntax for these is the same, but only valid mutation/action names (from our interfaces) are allowed, and they require the correct payload. Furthermore, we can also gain typed access to other modules by calling `(dispatch|commit).root` and `(dispatch|commit).sub`, to reach out to the root module, or into sub modules (respectively). We can call these like `dispatch.sub<SubActions>('sub').typed('someSubAction')`, where SubActions is an interface for a sub module locally namespaced as `'sub'`, which has an action called `'someSubAction'`.
 
 ## Hooks for composition-api
 
@@ -205,6 +213,8 @@ export default defineComponent({
 })
 ```
 
+## Typed mapping helpers
+
 For classic options api components, we can use map functions to map a module just like the vuex helpers. Instead of using the `mapXXX` functions provided by Vuex, we can use `mapTypedXXX` provided by this module.
 
 ```typescript
@@ -236,6 +246,21 @@ export default Vue.extend({
 ```
 
 The `mapTypedXXX` functions, as shown above, have a slightly different syntax from vuex's helpers. We pass in a type argument (and optionally pass a namespace). Then chain a call to a `to` method, which accepts a list of typed keys. The result is fully typed as well, which means the all the keys we choose to map are known at design time, so they can even be inferred by developer tools like Vetur inside your component templates.
+
+Optionally we can rename the keys returned from the map functions, similar to passing an object to the vuex helper functions. This sort of call looks like this: `
+
+```typescript
+mapTypedMutations<TodoMutations>()
+    .map('ADD_TODO', 'REMOVE_TODO')
+    .to(({ ADD_TODO, REMOVE_TODO }) => ({
+        addTodo: ADD_TODO,
+        removeTodo: REMOVE_TODO,
+    }))
+```
+
+This lets use rename to anything we want, such as for avoid name collisions, renaming SNAKE_CASED names to camelCase, etc.
+
+## VM Instance Methods
 
 Typed access to the store through the view model instance is available as well, just like how you can access `this.$store`.
 
@@ -304,4 +329,4 @@ export default Vue.extend({
 })
 ```
 
-This trivial example simply replaces the mapping functions with the same result using the instance methods. Just like in all the other examples, keys, payloads and results are fully typed based on the interfaces passed into them. In the simplest use, this would allow you to map some module properties to different names (in case of name collision). But you could also use state/mutations/actions/etc in any method or computed property, again with strong typing.
+This example simply replaces the mapping functions with the same result using the instance methods. Just like in all the other examples, keys, payloads and results are fully typed based on the interfaces passed into them. In the simplest use, this would allow you to map some module properties to different names (in case of name collision). But you could also use state/mutations/actions/etc in any method or computed property, again with strong typing.
