@@ -5,13 +5,13 @@
     <img src="https://img.shields.io/badge/coverage-100%25-brightgreen">
 </p>
 
-### A set of handy types and utility functions for creating more strongly typed Vuex modules.
+### A set of handy types and utility functions for creating strongly typed Vuex modules.
 
 ## The Problem
 
 Vuex, along with many JavaScript implementations of the flux pattern, throws away a lot of useful type information. A `Store` only keeps the type of its state and you don't get any parameter type information when calling `commit` or `dispatch`. However, by adding some extra types and utility functions, we can write types for our modules that help with both writing the modules and using them.
 
-## TLDR: Why?
+## TL/DR: Why?
 
 Wouldn't it be great if we could use vuex and get the benefits of static typing?
 
@@ -247,7 +247,7 @@ export default Vue.extend({
 
 The `mapTypedXXX` functions, as shown above, have a slightly different syntax from vuex's helpers. We pass in a type argument (and optionally pass a namespace). Then chain a call to a `to` method, which accepts a list of typed keys. The result is fully typed as well, which means the all the keys we choose to map are known at design time, so they can even be inferred by developer tools like Vetur inside your component templates.
 
-Optionally we can rename the keys returned from the map functions, similar to passing an object to the vuex helper functions. This sort of call looks like this: `
+Optionally we can rename the keys returned from the map functions, similar to passing an object to the vuex helper functions. This sort of call looks like this:
 
 ```typescript
 mapTypedMutations<TodoMutations>()
