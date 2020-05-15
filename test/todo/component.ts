@@ -13,13 +13,15 @@ import {
     mapTypedGetters,
 } from '../../src'
 export const template = `
-<div>
+<div id="root">
     <button type="button" id="add" @click="ADD_TODO">Add</button>
     <button type="button" id="mappedAdd" @click="addTodo">Add</button>
     <button type="button" id="clear" @click="clearDone">Clear Done</button>
+    <button type="button" id="mappedClearDone" @click="mappedClearDone">Clear Done</button>
     <div><span>Done: {{ doneCount }} </span><span>Not done: {{ notDoneCount }}</span></div>
     <div><span>Done: {{ subDoneCount }} </span><span>Not done: {{ subNotDoneCount }}</span></div>
-    <div><input readonly id="count" :value="mappedTodos.length" ></div>
+    <div><input id="mappedDoneCount" :value="mappedDoneCount"></div>
+    <div><input id="count" :value="mappedTodos.length" ></div>
     <ul id="list">
         <li v-for="(todo, index) in todos" :key="filter + index">
             <input
@@ -55,6 +57,9 @@ const createTodoComponent = (
                     'notDoneCount',
                     'filtered'
                 ),
+                ...mapTypedGetters<TodoGetters>(namespace)
+                    .map('doneCount')
+                    .to(({ doneCount }) => ({ mappedDoneCount: doneCount })),
                 ...mapTypedGetters<SubGetters>(
                     namespace ? namespace + '/sub' : 'sub'
                 ).to('subDoneCount', 'subNotDoneCount'),
@@ -75,6 +80,9 @@ const createTodoComponent = (
                     'setText',
                     'clearDone'
                 ),
+                ...mapTypedActions<TodoActions>(namespace)
+                    .map('clearDone')
+                    .to(({ clearDone }) => ({ mappedClearDone: clearDone })),
             },
         })
     }
@@ -92,16 +100,19 @@ const createTodoComponent = (
                 return this.$state<TodoState>(namespace).get('filter')
             },
             filtered(this: Vue) {
-                return this.$getters<TodoGetters>().get('filtered')
+                return this.$getters<TodoGetters>(namespace).get('filtered')
             },
             doneCount(this: Vue) {
-                return this.$getters<TodoGetters>().get('doneCount')
+                return this.$getters<TodoGetters>(namespace).get('doneCount')
+            },
+            mappedDoneCount(this: Vue) {
+                return this.$getters<TodoGetters>(namespace).get('doneCount')
             },
             subDoneCount(this: Vue) {
                 return this.$getters<SubGetters>('sub').get('subDoneCount')
             },
             notDoneCount(this: Vue) {
-                return this.$getters<TodoGetters>().get('notDoneCount')
+                return this.$getters<TodoGetters>(namespace).get('notDoneCount')
             },
             subNotDoneCount(this: Vue) {
                 return this.$getters<SubGetters>('sub').get('subNotDoneCount')
@@ -127,6 +138,9 @@ const createTodoComponent = (
                 )
             },
             clearDone(this: Vue) {
+                this.$actions<TodoActions>(namespace).dispatch('clearDone')
+            },
+            mappedClearDone(this: Vue) {
                 this.$actions<TodoActions>(namespace).dispatch('clearDone')
             },
             setText(this: Vue, payload: { text: string; index: number }) {

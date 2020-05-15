@@ -21,6 +21,11 @@ export type MapGettersSelector<T> = {
     to: <K extends keyof SubType<T, Getter<any, any>>>(
         ...keys: K[]
     ) => Pick<MappedGetters<T>, K>
+    map: <K extends keyof SubType<T, Getter<any, any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(mapper: (mapped: Pick<MappedGetters<T>, K>) => U) => U
+    }
 }
 export function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T> {
     return {
@@ -30,6 +35,12 @@ export function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T> {
             (typeof namespace === 'string'
                 ? mapGetters(namespace, keys as string[])
                 : mapGetters(keys as string[])) as MappedGetters<T>,
+        map(...keys) {
+            const mapped = this.to(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
+        },
     }
 }
 

@@ -11,6 +11,18 @@ export type ActionRefMapper<A> = {
     ) => {
         [P in K]: ActionFn<A[P]>
     }
+
+    map: <K extends keyof SubType<A, Action<any, any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(
+            mapper: (
+                mapped: {
+                    [P in K]: ActionFn<A[P]>
+                }
+            ) => U
+        ) => U
+    }
 }
 
 export function useActions<A>(namespace?: NamespaceRef): ActionRefMapper<A> {
@@ -27,6 +39,12 @@ export function useActions<A>(namespace?: NamespaceRef): ActionRefMapper<A> {
             })
 
             return result as Record<K, ActionFn<A[K]>>
+        },
+        map(...keys) {
+            const mapped = this.with(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
         },
     }
 }

@@ -9,7 +9,14 @@ export declare type MappedActions<T> = {
     [P in keyof T]: T[P] extends Action<any, any> ? MappedAction<T[P]> : never;
 };
 export declare type MapActionsSelector<T> = {
-    to: <K extends keyof SubType<T, Action<any, any>>>(...keys: K[]) => Pick<MappedActions<T>, K>;
+    to: <K extends keyof SubType<T, Action<any, any>>>(...keys: K[]) => {
+        [P in K]: MappedActions<T>[P];
+    };
+    map: <K extends keyof SubType<T, Action<any, any>>>(...keys: K[]) => {
+        to: <U>(mapper: (mapped: {
+            [P in K]: MappedActions<T>[P];
+        }) => U) => U;
+    };
 };
 export declare function mapTypedActions<T>(namespace?: string): MapActionsSelector<T>;
 export declare type ActionVmFn<T> = <K extends keyof SubType<T, Action<any, any>>>(...params: ActionPayload<T[K]> extends void ? [K] : [K, ActionPayload<T[K]>]) => Promise<any>;

@@ -44,6 +44,16 @@ function useMutations(namespace) {
             });
             return result;
         },
+        map: function () {
+            var keys = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                keys[_i] = arguments[_i];
+            }
+            var mapped = this.with.apply(this, __spread(keys));
+            return {
+                to: function (mapper) { return mapper(mapped); },
+            };
+        },
     };
 }
 exports.useMutations = useMutations;

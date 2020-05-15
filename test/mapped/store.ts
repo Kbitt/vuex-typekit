@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { MutationType, ActionType, createModule } from '../../src'
+import { MutationType, ActionType, createModule, GetterType } from '../../src'
 import Vuex, { Store } from 'vuex'
 
 Vue.use(Vuex)
@@ -17,9 +17,13 @@ export interface Actions {
     increment: ActionType<State>
 }
 
+export interface Getters {
+    next: GetterType<number, State>
+}
+
 export default () =>
     new Store(
-        createModule<State, Mutations, Actions>({
+        createModule<State, Mutations, Actions, Getters>({
             state: () => ({ count: 0, previous: 0 }),
             mutations: {
                 INCREMENT: state => state.count++,
@@ -31,6 +35,9 @@ export default () =>
                     commit.typed('SET_PREVIOUS', { previous: state.count })
                     commit.typed('INCREMENT')
                 },
+            },
+            getters: {
+                next: state => state.count + 1,
             },
         })
     )

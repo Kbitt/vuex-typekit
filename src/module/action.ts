@@ -39,7 +39,12 @@ export type MappedActions<T> = {
 export type MapActionsSelector<T> = {
     to: <K extends keyof SubType<T, Action<any, any>>>(
         ...keys: K[]
-    ) => Pick<MappedActions<T>, K>
+    ) => { [P in K]: MappedActions<T>[P] }
+    map: <K extends keyof SubType<T, Action<any, any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(mapper: (mapped: { [P in K]: MappedActions<T>[P] }) => U) => U
+    }
 }
 
 export function mapTypedActions<T>(namespace?: string): MapActionsSelector<T> {
@@ -50,6 +55,12 @@ export function mapTypedActions<T>(namespace?: string): MapActionsSelector<T> {
             (typeof namespace === 'string'
                 ? mapActions(namespace, keys as string[])
                 : mapActions(keys as string[])) as MappedActions<T>,
+        map(...keys) {
+            const mapped = this.to(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
+        },
     }
 }
 

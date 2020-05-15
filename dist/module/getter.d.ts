@@ -12,6 +12,9 @@ export declare type TypedGetters<T> = {
 };
 export declare type MapGettersSelector<T> = {
     to: <K extends keyof SubType<T, Getter<any, any>>>(...keys: K[]) => Pick<MappedGetters<T>, K>;
+    map: <K extends keyof SubType<T, Getter<any, any>>>(...keys: K[]) => {
+        to: <U>(mapper: (mapped: Pick<MappedGetters<T>, K>) => U) => U;
+    };
 };
 export declare function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T>;
 export declare type VmGetter<T> = {

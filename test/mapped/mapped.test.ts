@@ -1,5 +1,5 @@
 import createStore, { State, Mutations, Actions } from './store'
-import { mapTypedState, mapTypedMutations } from '../../src'
+import { mapTypedState, mapTypedMutations, mapTypedActions } from '../../src'
 
 describe('test mapped values', () => {
     let $store: ReturnType<typeof createStore>
@@ -55,5 +55,26 @@ describe('test mapped values', () => {
         expect($store.state.count).toBe(3)
         INCREMENT.call({ $store })
         expect($store.state.count).toBe(4)
+    })
+
+    it('test mapped actions', () => {
+        const { mappedIncrement } = mapTypedActions<Actions>()
+            .map('increment')
+            .to(({ increment }) => ({ mappedIncrement: increment }))
+
+        const { increment } = mapTypedActions<Actions>().to('increment')
+
+        mappedIncrement.call({ $store })
+        expect($store.state.count).toBe(1)
+        expect($store.state.previous).toBe(0)
+        increment.call({ $store })
+        expect($store.state.count).toBe(2)
+        expect($store.state.previous).toBe(1)
+        mappedIncrement.call({ $store })
+        expect($store.state.count).toBe(3)
+        expect($store.state.previous).toBe(2)
+        increment.call({ $store })
+        expect($store.state.count).toBe(4)
+        expect($store.state.previous).toBe(3)
     })
 })

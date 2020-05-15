@@ -43,6 +43,9 @@ describe('test todos', () => {
         await wrapped.find('#add').trigger('click')
         expect(getState(namespace).todos.length).toBe(1)
         expect(getGetter('doneCount', namespace)).toBe(0)
+        expect(
+            (wrapped.find('#mappedDoneCount').element as HTMLInputElement).value
+        ).toBe('0')
         expect(getGetter('notDoneCount', namespace)).toBe(1)
 
         const li = wrapped.find('li').element
@@ -64,6 +67,9 @@ describe('test todos', () => {
         await localVue.nextTick()
 
         expect(getGetter('doneCount', namespace)).toBe(1)
+        expect(
+            (wrapped.find('#mappedDoneCount').element as HTMLInputElement).value
+        ).toBe('1')
         expect(getGetter('notDoneCount', namespace)).toBe(0)
         expect(getState(namespace).todos[0].done).toBe(true)
 
@@ -83,6 +89,17 @@ describe('test todos', () => {
 
         await wrapped.find('#mappedAdd').trigger('click')
         expect(wrapped.findAll('li').length).toBe(4)
+
+        const root = wrapped.find('#root').element
+        // mark everything as done
+        Array.from(root.querySelectorAll('input[type=checkbox]')).forEach(e => {
+            const el = e as HTMLInputElement
+            el.checked = true
+            el.dispatchEvent(new Event('input'))
+        })
+        await localVue.nextTick()
+        await wrapped.find('#mappedClearDone').trigger('click')
+        expect(getState(namespace).todos.length).toBe(0)
     }
 
     ;[true, false].forEach(useCreateModule => {

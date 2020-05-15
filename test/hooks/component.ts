@@ -23,6 +23,9 @@ export function createHookTodoComponent(namespace?: string) {
                     'filtered',
                     'notDoneCount'
                 ),
+                ...useGetters<TodoGetters>(namespace)
+                    .map('doneCount')
+                    .to(({ doneCount }) => ({ mappedDoneCount: doneCount })),
                 ...useGetters<SubGetters>(
                     namespace ? namespace + '/sub' : 'sub'
                 ).with('subDoneCount', 'subNotDoneCount'),
@@ -41,6 +44,9 @@ export function createHookTodoComponent(namespace?: string) {
                     'setText',
                     'clearDone'
                 ),
+                ...useActions<TodoActions>(namespace)
+                    .map('clearDone')
+                    .to(({ clearDone }) => ({ mappedClearDone: clearDone })),
             }
         },
     })

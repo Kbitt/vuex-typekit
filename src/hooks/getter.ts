@@ -10,6 +10,15 @@ export type GetterRefMapper<G> = {
     ) => {
         [P in K]: Readonly<Ref<Readonly<ReturnType<G[P]>>>>
     }
+    map: <K extends keyof SubType<G, Getter<any, any>>>(
+        ...keys: K[]
+    ) => {
+        to: <U>(
+            mapper: (
+                mapped: { [P in K]: Readonly<Ref<Readonly<ReturnType<G[P]>>>> }
+            ) => U
+        ) => U
+    }
 }
 
 export function useGetters<G>(namespace?: NamespaceRef): GetterRefMapper<G> {
@@ -26,6 +35,12 @@ export function useGetters<G>(namespace?: NamespaceRef): GetterRefMapper<G> {
                 result[key] = computed(() => mapped.value[key].call({ $store }))
             })
             return result
+        },
+        map(...keys) {
+            const mapped = this.with(...keys)
+            return {
+                to: mapper => mapper(mapped),
+            }
         },
     }
 }
