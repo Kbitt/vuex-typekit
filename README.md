@@ -1,11 +1,9 @@
 # vuex-typekit
 
-<p aling="center">
-    <img src="https://circleci.com/gh/Kbitt/vuex-typekit.svg?style=shield">
-    <img src="https://img.shields.io/badge/coverage-100%25-brightgreen">
-</p>
-
 ### A set of handy types and utility functions for creating strongly typed Vuex modules.
+
+![build](https://circleci.com/gh/Kbitt/vuex-typekit.svg?style=shield)
+![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 ## The Problem
 
