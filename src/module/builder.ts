@@ -236,7 +236,7 @@ export function createModule<
           }) &
     (Getters extends void
         ? {
-              getters: GetterTree<State, RootState>
+              getters?: GetterTree<State, RootState>
           }
         : {
               getters: { [P in keyof typeof getters]: Getter<State, RootState> }
