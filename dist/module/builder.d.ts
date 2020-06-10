@@ -48,8 +48,11 @@ export interface TypedActionContext<State, Mutations, Actions, Getters = any, Ro
     rootGetters: TypedGetters<RootGetters>;
 }
 export declare type TypedActionHandler<P extends keyof SubType<Actions, Action<any, any>>, State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = ActionPayload<Actions[P]> extends void ? (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>) => Promise<any> | void : (context: TypedActionContext<State, Mutations, Actions, Getters, RootState, RootGetters>, payload: ActionPayload<Actions[P]>) => Promise<any> | void;
-export declare type CreateModuleOptions<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void> = {
+export declare type CreateModuleOptions<State extends {}, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void> = {
     namespaced?: boolean;
+    automutate?: boolean | {
+        rawPayloads: boolean;
+    };
     state: State | (() => State);
     modules?: Record<string, any>;
 } & (Mutations extends void ? {
@@ -59,13 +62,26 @@ export declare type CreateModuleOptions<State, Mutations = void, Actions = void,
 }) & (Actions extends void ? {
     actions?: ActionTree<State, RootState>;
 } : {
-    actions: CreateActionsOptions<State, Mutations, Actions, Getters, RootState, RootGetters>;
+    actions: Omit<CreateActionsOptions<State, Mutations, Actions, Getters, RootState, RootGetters>, 'automutate'>;
 }) & (Getters extends void ? {
     getters?: GetterTree<State, RootState>;
 } : {
     getters: CreateGettersOptions<State, Getters, RootState, RootGetters>;
 });
-export declare function createModule<State, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void>({ state, mutations, actions, getters, namespaced, modules, }: CreateModuleOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
+export declare function createAutomodule<State extends {}, Actions = void, Getters = void, RootState = void, RootGetters = void>(options: CreateModuleOptions<State, void, Actions, Getters, RootState, RootGetters>): {
+    state: State | (() => State);
+} & {
+    mutations?: MutationTree<State> | undefined;
+} & (Actions extends void ? {
+    actions?: ActionTree<State, RootState> | undefined;
+} : {
+    actions: {};
+}) & (Getters extends void ? {
+    getters?: GetterTree<State, RootState> | undefined;
+} : {
+    getters: {};
+});
+export declare function createModule<State extends {}, Mutations = void, Actions = void, Getters = void, RootState = void, RootGetters = void>({ state, mutations, automutate, actions, getters, namespaced, modules, }: CreateModuleOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
     state: typeof state;
 } & (Mutations extends void ? {
     mutations?: MutationTree<State>;
@@ -80,7 +96,7 @@ export declare function createModule<State, Mutations = void, Actions = void, Ge
         [P in keyof typeof actions]: ActionHandler<State, RootState>;
     };
 }) & (Getters extends void ? {
-    getters: GetterTree<State, RootState>;
+    getters?: GetterTree<State, RootState>;
 } : {
     getters: {
         [P in keyof typeof getters]: Getter<State, RootState>;
@@ -89,7 +105,11 @@ export declare function createModule<State, Mutations = void, Actions = void, Ge
 export declare type CreateActionsOptions<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any> = {
     [P in keyof SubType<Actions, Action<any, any>>]: TypedActionHandler<P, State, Mutations, Actions, Getters, RootState, RootGetters>;
 };
-export declare function createActions<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any>(options: CreateActionsOptions<State, Mutations, Actions, Getters, RootState, RootGetters>): {
+export declare function createActions<State, Mutations, Actions, Getters = any, RootState = any, RootGetters = any>(options: CreateActionsOptions<State, Mutations, Actions, Getters, RootState, RootGetters>, extraOptions?: {
+    automutate?: boolean | {
+        rawPayloads: boolean;
+    };
+}): {
     [P in keyof typeof options]: ActionHandler<State, RootState>;
 };
 export declare type CreateGettersOptions<State, Getters, RootState = any, RootGetters = any> = {

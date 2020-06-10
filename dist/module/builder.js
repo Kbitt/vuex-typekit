@@ -38,17 +38,36 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+function createAutomodule(options) {
+    if (!options.automutate) {
+        options.automutate = true;
+    }
+    return createModule(options);
+}
+exports.createAutomodule = createAutomodule;
 function createModule(_a) {
-    var state = _a.state, mutations = _a.mutations, actions = _a.actions, getters = _a.getters, namespaced = _a.namespaced, modules = _a.modules;
+    var state = _a.state, mutations = _a.mutations, automutate = _a.automutate, actions = _a.actions, getters = _a.getters, namespaced = _a.namespaced, modules = _a.modules;
+    var defaultMutations = {};
+    if (automutate) {
+        var initialState = typeof state === 'function' ? state() : state;
+        Object.keys(initialState).forEach(function (key) {
+            defaultMutations['SET_' + key] = function (state, payload) {
+                var value = typeof automutate === 'object' && automutate.rawPayloads
+                    ? payload
+                    : payload[key];
+                state[key] = value;
+            };
+        });
+    }
     return {
         state: state,
         namespaced: namespaced,
         modules: modules,
-        mutations: mutations
+        mutations: __assign(__assign({}, defaultMutations), (mutations
             ? createMutations(mutations)
-            : {},
+            : {})),
         actions: actions
-            ? createActions(actions)
+            ? createActions(__assign({}, actions), { automutate: automutate })
             : {},
         getters: getters
             ? createGetters(getters)
@@ -56,12 +75,13 @@ function createModule(_a) {
     };
 }
 exports.createModule = createModule;
-function createActions(options) {
+function createActions(options, extraOptions) {
+    if (extraOptions === void 0) { extraOptions = {}; }
     var result = {};
     Object.keys(options).forEach(function (key) {
         var k = key;
         result[k] = function (_a, payload) {
-            var commit = _a.commit, dispatch = _a.dispatch, context = __rest(_a, ["commit", "dispatch"]);
+            var commit = _a.commit, dispatch = _a.dispatch, rawState = _a.state, context = __rest(_a, ["commit", "dispatch", "state"]);
             var wrappedCommit = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
@@ -116,7 +136,26 @@ function createActions(options) {
                     },
                 };
             };
-            return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { commit: wrappedCommit, dispatch: wrappedDispatch }), payload));
+            var state = rawState;
+            if (extraOptions.automutate) {
+                state = {};
+                var rawPayload_1 = (typeof extraOptions.automutate === 'object' &&
+                    extraOptions.automutate) ||
+                    false;
+                Object.keys(rawState).forEach(function (key) {
+                    Object.defineProperty(state, key, {
+                        get: function () { return rawState[key]; },
+                        set: function (value) {
+                            var _a;
+                            var payload = rawPayload_1
+                                ? value
+                                : (_a = {}, _a[key] = value, _a);
+                            commit("SET_" + key, payload);
+                        },
+                    });
+                });
+            }
+            return Promise.resolve(options[k].call(this, __assign(__assign({}, context), { state: state, commit: wrappedCommit, dispatch: wrappedDispatch }), payload));
         };
     });
     return result;
