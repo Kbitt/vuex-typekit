@@ -132,7 +132,7 @@ export type TypedActionHandler<
       ) => Promise<any> | void
 
 export type CreateModuleOptions<
-    State,
+    State extends {},
     Mutations = void,
     Actions = void,
     Getters = void,
@@ -140,6 +140,11 @@ export type CreateModuleOptions<
     RootGetters = void
 > = {
     namespaced?: boolean
+    automutate?:
+        | boolean
+        | {
+              rawPayloads: boolean
+          }
     state: State | (() => State)
     modules?: Record<string, any>
 } & (Mutations extends void
@@ -150,13 +155,16 @@ export type CreateModuleOptions<
     (Actions extends void
         ? { actions?: ActionTree<State, RootState> }
         : {
-              actions: CreateActionsOptions<
-                  State,
-                  Mutations,
-                  Actions,
-                  Getters,
-                  RootState,
-                  RootGetters
+              actions: Omit<
+                  CreateActionsOptions<
+                      State,
+                      Mutations,
+                      Actions,
+                      Getters,
+                      RootState,
+                      RootGetters
+                  >,
+                  'automutate'
               >
           }) &
     (Getters extends void
@@ -170,8 +178,30 @@ export type CreateModuleOptions<
               >
           })
 
+export function createAutomodule<
+    State extends {},
+    Actions = void,
+    Getters = void,
+    RootState = void,
+    RootGetters = void
+>(
+    options: CreateModuleOptions<
+        State,
+        void,
+        Actions,
+        Getters,
+        RootState,
+        RootGetters
+    >
+) {
+    if (!options.automutate) {
+        options.automutate = true
+    }
+    return createModule(options)
+}
+
 export function createModule<
-    State,
+    State extends {},
     Mutations = void,
     Actions = void,
     Getters = void,
@@ -180,6 +210,7 @@ export function createModule<
 >({
     state,
     mutations,
+    automutate,
     actions,
     getters,
     namespaced,
@@ -210,13 +241,30 @@ export function createModule<
         : {
               getters: { [P in keyof typeof getters]: Getter<State, RootState> }
           }) {
+    let defaultMutations = {} as Record<string, Function>
+    if (automutate) {
+        const initialState =
+            typeof state === 'function' ? (state as () => State)() : state
+        Object.keys(initialState).forEach(key => {
+            defaultMutations['SET_' + key] = (state: any, payload: any) => {
+                const value =
+                    typeof automutate === 'object' && automutate.rawPayloads
+                        ? payload
+                        : payload[key]
+                state[key] = value
+            }
+        })
+    }
     return {
         state,
         namespaced,
         modules,
-        mutations: mutations
-            ? createMutations<State, Mutations>(mutations as any)
-            : {},
+        mutations: {
+            ...defaultMutations,
+            ...(mutations
+                ? createMutations<State, Mutations>(mutations as any)
+                : {}),
+        },
         actions: actions
             ? createActions<
                   State,
@@ -225,7 +273,12 @@ export function createModule<
                   Getters,
                   RootState,
                   RootGetters
-              >(actions as any)
+              >(
+                  {
+                      ...(actions as any),
+                  },
+                  { automutate }
+              )
             : {},
         getters: getters
             ? createGetters<State, Getters, RootState, RootGetters>(
@@ -269,7 +322,14 @@ export function createActions<
         Getters,
         RootState,
         RootGetters
-    >
+    >,
+    extraOptions: {
+        automutate?:
+            | boolean
+            | {
+                  rawPayloads: boolean
+              }
+    } = {}
 ): { [P in keyof typeof options]: ActionHandler<State, RootState> } {
     const result = {} as {
         [P in keyof typeof options]: ActionHandler<State, RootState>
@@ -277,7 +337,12 @@ export function createActions<
     Object.keys(options).forEach(key => {
         const k = key as keyof typeof options
         result[k] = function (
-            { commit, dispatch, ...context }: ActionContext<State, any>,
+            {
+                commit,
+                dispatch,
+                state: rawState,
+                ...context
+            }: ActionContext<State, any>,
             payload?: any
         ) {
             const wrappedCommit = function (this: any, ...args: any) {
@@ -328,11 +393,32 @@ export function createActions<
                     },
                 }
             }
+
+            let state = rawState as any
+            if (extraOptions.automutate) {
+                state = {}
+                const rawPayload =
+                    (typeof extraOptions.automutate === 'object' &&
+                        extraOptions.automutate) ||
+                    false
+                Object.keys(rawState).forEach(key => {
+                    Object.defineProperty(state, key, {
+                        get: () => rawState[key as keyof State],
+                        set: value => {
+                            const payload = rawPayload
+                                ? value
+                                : { [key]: value }
+                            commit(`SET_${key}`, payload)
+                        },
+                    })
+                })
+            }
             return Promise.resolve(
                 (options[k] as any).call(
                     this,
                     {
                         ...context,
+                        state,
                         commit: wrappedCommit,
                         dispatch: wrappedDispatch,
                     },
