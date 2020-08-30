@@ -2,7 +2,7 @@ import { Getter, mapGetters } from 'vuex'
 import { SubType, VueForMappers } from './types'
 
 export type GetterType<Result, S, R = any, G = any, RG = any> = {
-    (state: S, rootState: R, getters: G, rootGetters: RG): Result
+    (state: S, getters: G, rootState: R, rootGetters: RG): Result
 }
 
 export type MappedGetter<T extends Getter<any, any>> = (
