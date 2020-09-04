@@ -38,7 +38,9 @@ function useGetters(namespace) {
             });
             var result = {};
             keys.forEach(function (key) {
-                result[key] = composition_api_1.computed(function () { return mapped.value[key].call({ $store: $store }); });
+                result[key] = composition_api_1.computed(function () {
+                    return mapped.value[key].call({ $store: $store });
+                });
             });
             return result;
         },
