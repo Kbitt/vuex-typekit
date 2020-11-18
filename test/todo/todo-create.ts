@@ -45,6 +45,12 @@ export const createTodoModule = () =>
             doneCount: state => state.todos.filter(todo => todo.done).length,
             notDoneCount: (state, getters) =>
                 state.todos.length - getters.doneCount,
+            contains: state => filter => {
+                const result = state.todos.filter(({ text }) =>
+                    text.includes(filter)
+                )
+                return result
+            },
         },
         actions: {
             clearDone: ({ state, commit }) => {

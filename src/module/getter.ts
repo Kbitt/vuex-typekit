@@ -1,5 +1,6 @@
 import { Getter, mapGetters } from 'vuex'
 import { SubType, VueForMappers } from './types'
+import { GetterResult } from '../hooks'
 
 export type GetterType<Result, S, R = any, G = any, RG = any> = {
     (state: S, getters: G, rootState: R, rootGetters: RG): Result
@@ -45,7 +46,9 @@ export function mapTypedGetters<T>(namespace?: string): MapGettersSelector<T> {
 }
 
 export type VmGetter<T> = {
-    get: <K extends keyof SubType<T, Getter<any, any>>>(name: K) => T[K]
+    get: <K extends keyof SubType<T, Getter<any, any>>>(
+        name: K
+    ) => ReturnType<T[K]>
 }
 
 export function vmGetters<Getters>(

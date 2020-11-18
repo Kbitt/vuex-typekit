@@ -1,8 +1,8 @@
-import { Ref } from '@vue/composition-api';
-import { SubType } from '../module/types';
+import { ComputedRef } from '@vue/composition-api';
 import { Getter } from 'vuex';
+import { SubType } from '../module/types';
 import { NamespaceRef } from './types';
-export declare type GetterResult<T extends Getter<any, any>> = ReturnType<T> extends (...args: any) => any ? Readonly<Ref<ReturnType<T>>> : Readonly<Ref<Readonly<ReturnType<T>>>>;
+export declare type GetterResult<T extends Getter<any, any>> = ComputedRef<ReturnType<T>>;
 export declare type GetterRefMapper<G> = {
     with: <K extends keyof SubType<G, Getter<any, any>>>(...keys: K[]) => {
         [P in K]: GetterResult<G[P]>;

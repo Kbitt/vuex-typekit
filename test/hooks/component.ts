@@ -1,4 +1,4 @@
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, computed } from '@vue/composition-api'
 import { template } from '../todo/component'
 import {
     TodoState,
@@ -13,16 +13,19 @@ export function createHookTodoComponent(namespace?: string) {
     return defineComponent({
         template,
         setup: () => {
+            const getters = useGetters<TodoGetters>(namespace).with(
+                'doneCount',
+                'filtered',
+                'notDoneCount',
+                'contains'
+            )
             return {
+                containsFoo: computed(() => getters.contains.value('foo')),
                 ...useState<TodoState>(namespace).with('filter', 'todos'),
                 ...useState<TodoState>(namespace)
                     .map('todos')
                     .to(state => ({ mappedTodos: state.todos })),
-                ...useGetters<TodoGetters>(namespace).with(
-                    'doneCount',
-                    'filtered',
-                    'notDoneCount'
-                ),
+                ...getters,
                 ...useGetters<TodoGetters>(namespace)
                     .map('doneCount')
                     .to(({ doneCount }) => ({ mappedDoneCount: doneCount })),

@@ -13,6 +13,11 @@ interface MyState {
 
 interface MyRootGetters {
     next: GetterType<'dark' | 'light', MyRootState, MyRootGetters>
+    isNext: GetterType<
+        (input: 'dark' | 'light') => boolean,
+        MyRootState,
+        MyRootGetters
+    >
 }
 
 interface MyGetters {
@@ -28,6 +33,7 @@ const createStore = () =>
         getters: {
             ...createGetters<MyRootState, MyRootGetters>({
                 next: state => (state.mode === 'dark' ? 'light' : 'dark'),
+                isNext: (_, getters) => input => getters.next === input,
             }),
         },
         modules: {
@@ -72,8 +78,18 @@ describe('getter', () => {
         )
     })
 
+    it('callback is function', () => {
+        expect(typeof $store.getters['isNext']).toBe('function')
+    })
+
     it('map', () => {
         const mapped = mapTypedGetters<MyRootGetters>().to('next')
         expect(mapped.next.call({ $store })).toBe('dark')
+    })
+
+    it('map callback', () => {
+        const { isNext } = mapTypedGetters<MyRootGetters>().to('isNext')
+        expect(isNext.call({ $store })('dark')).toBe(true)
+        expect(isNext.call({ $store })('light')).toBe(false)
     })
 })

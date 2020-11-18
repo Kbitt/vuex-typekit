@@ -49,14 +49,19 @@ describe('test todos', () => {
         expect(getGetter('notDoneCount', namespace)).toBe(1)
 
         const li = wrapped.find('li').element
-        const [doneEl, textEl, delBtn] = Array.from(li.children) as [
+        const [doneEl, textEl] = Array.from(li.children) as [
             HTMLInputElement,
-            HTMLInputElement,
-            HTMLButtonElement
+            HTMLInputElement
         ]
         const TASK = 'DO THAT THING'
+
+        const getInputValue = (selector: string) =>
+            (wrapped.find(selector).element as HTMLInputElement).value
         textEl.value = TASK
         textEl.dispatchEvent(new Event('input'))
+
+        expect(getInputValue('#contains')).toBe('0')
+        expect(getInputValue('#containsFoo')).toBe('0')
 
         await localVue.nextTick()
 
@@ -67,9 +72,7 @@ describe('test todos', () => {
         await localVue.nextTick()
 
         expect(getGetter('doneCount', namespace)).toBe(1)
-        expect(
-            (wrapped.find('#mappedDoneCount').element as HTMLInputElement).value
-        ).toBe('1')
+        expect(getInputValue('#mappedDoneCount')).toBe('1')
         expect(getGetter('notDoneCount', namespace)).toBe(0)
         expect(getState(namespace).todos[0].done).toBe(true)
 
@@ -84,8 +87,12 @@ describe('test todos', () => {
         expect(wrapped.findAll('li').length).toBe(1)
         commit('ADD_TODO', null, namespace)
         commit('ADD_TODO', null, namespace)
+        commit('SET_TEXT', { index: 0, text: 'foo' }, namespace)
+        await localVue.nextTick()
         await localVue.nextTick()
         expect(wrapped.findAll('li').length).toBe(3)
+        expect(getInputValue('#contains')).toBe('1')
+        expect(getInputValue('#containsFoo')).toBe('1')
 
         await wrapped.find('#mappedAdd').trigger('click')
         expect(wrapped.findAll('li').length).toBe(4)
@@ -100,6 +107,8 @@ describe('test todos', () => {
         await localVue.nextTick()
         await wrapped.find('#mappedClearDone').trigger('click')
         expect(getState(namespace).todos.length).toBe(0)
+        expect(getInputValue('#contains')).toBe('0')
+        expect(getInputValue('#containsFoo')).toBe('0')
     }
 
     ;[true, false].forEach(useCreateModule => {

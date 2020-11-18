@@ -21,8 +21,8 @@ var __spread = (this && this.__spread) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var composition_api_1 = require("@vue/composition-api");
-var store_1 = require("./store");
 var module_1 = require("../module");
+var store_1 = require("./store");
 var types_1 = require("./types");
 function useGetters(namespace) {
     return {

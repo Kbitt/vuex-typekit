@@ -1,12 +1,12 @@
-import { Ref } from '@vue/composition-api';
+import { ComputedRef } from '@vue/composition-api';
 import { NamespaceRef } from './types';
 export declare type StateRefMapper<S> = {
     with: <K extends keyof S>(...keys: K[]) => {
-        [P in K]: Readonly<Ref<Readonly<S[P]>>>;
+        [P in K]: ComputedRef<S[P]>;
     };
     map: <K extends keyof S>(...keys: K[]) => {
         to: <U>(mapper: (mapped: {
-            [P in K]: Readonly<Ref<Readonly<S[P]>>>;
+            [P in K]: ComputedRef<S[P]>;
         }) => U) => U;
     };
 };

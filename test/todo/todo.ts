@@ -33,6 +33,7 @@ export interface TodoGetters {
     filtered: GetterType<Todo[], TodoState>
     doneCount: GetterType<number, TodoState>
     notDoneCount: GetterType<number, TodoState>
+    contains: GetterType<(filter: string) => Todo[], TodoState>
 }
 
 export interface TodoActions {
@@ -88,6 +89,8 @@ export const createTodoModule = () => ({
             doneCount: state => state.todos.filter(todo => todo.done).length,
             notDoneCount: state =>
                 state.todos.filter(todo => !todo.done).length,
+            contains: state => filter =>
+                state.todos.filter(todo => todo.text.includes(filter)),
         }),
     },
     actions: {

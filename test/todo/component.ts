@@ -22,6 +22,8 @@ export const template = `
     <div><span>Done: {{ subDoneCount }} </span><span>Not done: {{ subNotDoneCount }}</span></div>
     <div><input id="mappedDoneCount" :value="mappedDoneCount"></div>
     <div><input id="count" :value="mappedTodos.length" ></div>
+    <div><input id="contains" :value="contains('foo').length" ></div>
+    <div><input id="containsFoo" :value="containsFoo.length" ></div>
     <ul id="list">
         <li v-for="(todo, index) in todos" :key="filter + index">
             <input
@@ -48,6 +50,11 @@ const createTodoComponent = (
         return Vue.extend({
             template,
             computed: {
+                containsFoo() {
+                    return this.$getters<TodoGetters>(namespace).get(
+                        'contains'
+                    )('foo')
+                },
                 ...mapTypedState<TodoState>(namespace).to('todos', 'filter'),
                 ...mapTypedState<TodoState>(namespace)
                     .map('todos')
@@ -55,7 +62,8 @@ const createTodoComponent = (
                 ...mapTypedGetters<TodoGetters>(namespace).to(
                     'doneCount',
                     'notDoneCount',
-                    'filtered'
+                    'filtered',
+                    'contains'
                 ),
                 ...mapTypedGetters<TodoGetters>(namespace)
                     .map('doneCount')
@@ -90,66 +98,74 @@ const createTodoComponent = (
     return Vue.extend({
         template,
         computed: {
-            todos(this: Vue) {
+            containsFoo() {
+                return this.$getters<TodoGetters>(namespace).get('contains')(
+                    'foo'
+                )
+            },
+            todos() {
                 return this.$state<TodoState>(namespace).get('todos')
             },
-            mappedTodos(this: Vue) {
+            mappedTodos() {
                 return this.$state<TodoState>(namespace).get('todos')
             },
-            filter(this: Vue) {
+            filter() {
                 return this.$state<TodoState>(namespace).get('filter')
             },
-            filtered(this: Vue) {
+            filtered() {
                 return this.$getters<TodoGetters>(namespace).get('filtered')
             },
-            doneCount(this: Vue) {
+            doneCount() {
                 return this.$getters<TodoGetters>(namespace).get('doneCount')
             },
-            mappedDoneCount(this: Vue) {
+            contains() {
+                return this.$getters<TodoGetters>(namespace).get('contains')
+            },
+            mappedDoneCount() {
                 return this.$getters<TodoGetters>(namespace).get('doneCount')
             },
-            subDoneCount(this: Vue) {
+            subDoneCount() {
                 return this.$getters<SubGetters>('sub').get('subDoneCount')
             },
-            notDoneCount(this: Vue) {
+            notDoneCount() {
                 return this.$getters<TodoGetters>(namespace).get('notDoneCount')
             },
-            subNotDoneCount(this: Vue) {
+            subNotDoneCount() {
                 return this.$getters<SubGetters>('sub').get('subNotDoneCount')
             },
         },
         methods: {
-            ADD_TODO(this: Vue) {
+            ADD_TODO() {
                 this.$mutations<TodoMutations>(namespace).commit('ADD_TODO')
             },
-            REMOVE_TODO(this: Vue, payload: { index: number }) {
+            REMOVE_TODO(payload: { index: number }) {
                 this.$mutations<TodoMutations>(namespace).commit(
                     'REMOVE_TODO',
                     payload
                 )
             },
-            addTodo(this: Vue) {
+            addTodo() {
                 this.$mutations<TodoMutations>(namespace).commit('ADD_TODO')
             },
-            removeTodo(this: Vue, payload: { index: number }) {
+            removeTodo(payload: { index: number }) {
                 this.$mutations<TodoMutations>(namespace).commit(
                     'REMOVE_TODO',
                     payload
                 )
             },
-            clearDone(this: Vue) {
+            clearDone() {
                 this.$actions<TodoActions>(namespace).dispatch('clearDone')
             },
-            mappedClearDone(this: Vue) {
+            mappedClearDone() {
                 this.$actions<TodoActions>(namespace).dispatch('clearDone')
             },
-            setText(this: Vue, payload: { text: string; index: number }) {
+            setText(payload: { text: string; index: number }) {
                 this.$actions<TodoActions>(namespace).dispatch(
                     'setText',
                     payload
                 )
             },
-            setDone(this: Vue, payload: { done: boolean; index: number }) {
+            setDone(payload: { done: boolean; index: number }) {
                 this.$actions<TodoActions>(namespace).dispatch(
                     'setDone',
                     payload

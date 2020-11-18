@@ -1,4 +1,4 @@
-import { Ref, computed } from '@vue/composition-api'
+import { Ref, computed, ComputedRef } from '@vue/composition-api'
 import { mapTypedState } from '../module'
 import { useStore } from './store'
 import { NamespaceRef, resolveNamespace } from './types'
@@ -7,7 +7,7 @@ export type StateRefMapper<S> = {
     with: <K extends keyof S>(
         ...keys: K[]
     ) => {
-        [P in K]: Readonly<Ref<Readonly<S[P]>>>
+        [P in K]: ComputedRef<S[P]>
     }
 
     map: <K extends keyof S>(
@@ -16,7 +16,7 @@ export type StateRefMapper<S> = {
         to: <U>(
             mapper: (
                 mapped: {
-                    [P in K]: Readonly<Ref<Readonly<S[P]>>>
+                    [P in K]: ComputedRef<S[P]>
                 }
             ) => U
         ) => U
@@ -31,7 +31,7 @@ export function useState<S>(namespace?: NamespaceRef): StateRefMapper<S> {
                 mapTypedState<S>(resolveNamespace(namespace)).to(...keys)
             )
             const result = {} as {
-                [P in K]: Readonly<Ref<Readonly<S[P]>>>
+                [P in K]: ComputedRef<S[P]>
             }
             keys.forEach(key => {
                 result[key] = computed(() => mapped.value[key].call({ $store }))
