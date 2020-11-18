@@ -1,6 +1,6 @@
 {
     "name": "vuex-typekit",
-    "version": "2.1.5",
+    "version": "2.1.6",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "license": "MIT",
