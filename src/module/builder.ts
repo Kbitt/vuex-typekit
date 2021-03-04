@@ -223,15 +223,16 @@ export function createModule<
     RootState,
     RootGetters
 >): {
+    namespaced?: boolean
     state: typeof state
 } & (Mutations extends void
     ? { mutations?: MutationTree<State> }
-    : { mutations: { [P in keyof typeof mutations]: Mutation<State> } }) &
+    : { mutations: { [P in keyof Mutations]: Mutation<State> } }) &
     (Actions extends void
         ? { actions?: ActionTree<State, RootState> }
         : {
               actions: {
-                  [P in keyof typeof actions]: ActionHandler<State, RootState>
+                  [P in keyof Actions]: ActionHandler<State, RootState>
               }
           }) &
     (Getters extends void
@@ -239,7 +240,7 @@ export function createModule<
               getters?: GetterTree<State, RootState>
           }
         : {
-              getters: { [P in keyof typeof getters]: Getter<State, RootState> }
+              getters: { [P in keyof Getters]: Getter<State, RootState> }
           }) {
     let defaultMutations = {} as Record<string, Function>
     if (automutate) {
